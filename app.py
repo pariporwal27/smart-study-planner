@@ -771,6 +771,7 @@ def main():
         for _, r in subj_group.iterrows():
             day_map[r['Day']][r['Subject']] = float(r['Hours'])
 
+        with col_details:
             st.markdown(f"### {selected}")
             subjects_hours = day_map.get(selected, {})
             total = sum(subjects_hours.values()) if subjects_hours else 0
