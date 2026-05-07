@@ -402,15 +402,6 @@ def render_focus_mode():
             if st.button("🚪 Exit Zen Mode", use_container_width=True, key="z_exit"):
                 st.session_state.zen_toggle = False
                 st.rerun()
-        with st.expander("Timer Settings", expanded=True):
-            new_study = st.number_input("Study minutes", 5, 120, st.session_state.study_duration, 5)
-            if new_study != st.session_state.study_duration:
-                st.session_state.study_duration = new_study
-                update_durations(); st.rerun()
-            new_break = st.number_input("Break minutes", 1, 60, st.session_state.break_duration, 1)
-            if new_break != st.session_state.break_duration:
-                st.session_state.break_duration = new_break
-                update_durations(); st.rerun()
 
     # 3. TIMER LOGIC
     if st.session_state.focus_running and st.session_state.focus_end_time:
@@ -480,10 +471,6 @@ def render_focus_mode():
 
     if st.session_state.focus_running:
         time.sleep(1); st.rerun()
-
-    if st.session_state.focus_running:
-        time.sleep(1)
-        st.rerun()
 
 
 def _render_header_audio():
