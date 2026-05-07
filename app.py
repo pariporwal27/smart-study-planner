@@ -762,9 +762,14 @@ def main():
 
         if st.button("Save Progress", type="primary"):
             save_progress(results, actual_hours_by_subject, progress_date)
-            st.success("Progress saved to data/progress.csv")
+
             progress = load_progress()
             consistency_details = get_consistency_details(progress)
+            streak = calculate_daily_streak(progress)
+
+            st.success(f"Progress saved! Current streak: {streak} days 🔥")
+
+            st.rerun()
 
         # Reset progress workflow with confirmation
         if st.button("Reset Progress", key="reset_trigger"):

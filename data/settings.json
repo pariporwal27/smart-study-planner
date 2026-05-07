@@ -1,0 +1,13 @@
+{
+    "subjects_text": "Math, Physics, Chemistry, English",
+    "days_left": 21,
+    "total_hours": 5.0,
+    "Math_difficulty": 3,
+    "Math_score": 65,
+    "Physics_difficulty": 3,
+    "Physics_score": 65,
+    "Chemistry_difficulty": 3,
+    "Chemistry_score": 65,
+    "English_difficulty": 3,
+    "English_score": 65
+}
