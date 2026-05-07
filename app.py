@@ -358,8 +358,9 @@ def render_focus_mode():
         </style>
     """, unsafe_allow_html=True)
     
-    # Hidden State Tracking (Always present but CSS hidden)
-    st.toggle("Zen State Keeper", key="zen_toggle", label_visibility="collapsed")
+    # Hidden State Tracking (Only render if in Zen Mode to prevent key collision)
+    if is_zen:
+        st.toggle("Zen State Keeper", key="zen_toggle", label_visibility="collapsed")
     
     if "study_duration" not in st.session_state: st.session_state.study_duration = 50
     if "break_duration" not in st.session_state: st.session_state.break_duration = 10
