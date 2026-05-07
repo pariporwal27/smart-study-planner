@@ -317,46 +317,47 @@ def render_focus_mode():
     # 1. DEFINE ZEN STATE & NUCLEAR UI WIPE
     is_zen = st.session_state.get("zen_toggle", False)
     
-    # Aggressive CSS to kill all Streamlit artifacts
-    st.markdown("""
-        <style>
-            /* Kill Header, Footer, and Toggles */
-            header, [data-testid="stHeader"], .stAppHeader, [data-testid="stToolbar"], footer { display: none !important; visibility: hidden !important; height: 0 !important; }
-            [data-testid="stSidebar"], [data-testid="stTabs"] { display: none !important; }
-            .stApp > header { display: none !important; }
-            
-            /* Target the specific toggle widget to vanish it */
-            div[data-testid="stToggle"] { display: none !important; }
-            
-            /* The ⚙️ Trigger: A tiny, single-square floating glyph */
-            div[data-testid="stPopover"] { 
-                position: fixed !important; 
-                top: 8px !important; 
-                left: 8px !important; 
-                z-index: 99999999 !important; 
-                width: 24px !important;
-            }
-            div[data-testid="stPopover"] > button { 
-                background: rgba(255,255,255,0.05) !important; 
-                border: 1px solid rgba(255,255,255,0.1) !important; 
-                padding: 0 !important;
-                width: 24px !important;
-                height: 24px !important;
-                min-height: 24px !important;
-                border-radius: 4px !important;
-                color: rgba(255,255,255,0.2) !important;
-                box-shadow: none !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-            }
-            div[data-testid="stPopover"] > button:hover { 
-                color: white !important; 
-                background: rgba(255,255,255,0.15) !important;
-            }
-            div[data-testid="stPopover"] > button p { display: none !important; }
-        </style>
-    """, unsafe_allow_html=True)
+    # Aggressive CSS to kill all Streamlit artifacts (ONLY in Zen Mode)
+    if is_zen:
+        st.markdown("""
+            <style>
+                /* Kill Header, Footer, and Toggles */
+                header, [data-testid="stHeader"], .stAppHeader, [data-testid="stToolbar"], footer { display: none !important; visibility: hidden !important; height: 0 !important; }
+                [data-testid="stSidebar"], [data-testid="stTabs"] { display: none !important; }
+                .stApp > header { display: none !important; }
+                
+                /* Target the specific toggle widget to vanish it */
+                div[data-testid="stToggle"] { display: none !important; }
+                
+                /* The ⚙️ Trigger: A tiny, single-square floating glyph */
+                div[data-testid="stPopover"] { 
+                    position: fixed !important; 
+                    top: 8px !important; 
+                    left: 8px !important; 
+                    z-index: 99999999 !important; 
+                    width: 24px !important;
+                }
+                div[data-testid="stPopover"] > button { 
+                    background: rgba(255,255,255,0.05) !important; 
+                    border: 1px solid rgba(255,255,255,0.1) !important; 
+                    padding: 0 !important;
+                    width: 24px !important;
+                    height: 24px !important;
+                    min-height: 24px !important;
+                    border-radius: 4px !important;
+                    color: rgba(255,255,255,0.2) !important;
+                    box-shadow: none !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                }
+                div[data-testid="stPopover"] > button:hover { 
+                    color: white !important; 
+                    background: rgba(255,255,255,0.15) !important;
+                }
+                div[data-testid="stPopover"] > button p { display: none !important; }
+            </style>
+        """, unsafe_allow_html=True)
     
     # Hidden State Tracking (Only render if in Zen Mode to prevent key collision)
     if is_zen:
