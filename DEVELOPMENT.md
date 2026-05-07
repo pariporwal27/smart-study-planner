@@ -20,3 +20,4 @@ Update: Nuclear-level cleanup of Streamlit bars and UI artifacts
 Update: Added Play/Stop buttons for background audio in Zen view
 Update: Fixed settings rectangle being too large
 Update: Implemented hidden exit strategy in Zen Mode
+Update: Standardized atmosphere labels to 'Theme'
