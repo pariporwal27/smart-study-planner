@@ -11,3 +11,4 @@ Update: Added session tracking and progress pills
 Update: Enhanced visibility in Night Mode with high-contrast shadows
 Update: Consolidated Zen Mode toggles to prevent state duplication
 Update: Fixed NameError in render_focus_mode
+Update: Refactored durations to use session state for persistence
