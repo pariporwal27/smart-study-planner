@@ -314,42 +314,52 @@ def render_focus_mode():
     """Ultra-stable minimalist focus timer."""
     initialize_focus_state()
     
-    # 1. DEFINE ZEN STATE & HIDDEN KEEPER
+    # 1. DEFINE ZEN STATE & NUCLEAR UI WIPE
     is_zen = st.session_state.get("zen_toggle", False)
     
-    # Nuclear CSS to hide ALL Streamlit artifacts and the state keeper
+    # Aggressive CSS to kill all Streamlit artifacts
     st.markdown("""
         <style>
-            #zen-keeper-wrapper { display: none !important; visibility: hidden !important; height: 0 !important; }
-            header, [data-testid="stHeader"], .stAppHeader, [data-testid="stToolbar"], footer {
-                display: none !important;
-                visibility: hidden !important;
-            }
+            /* Kill Header, Footer, and Toggles */
+            header, [data-testid="stHeader"], .stAppHeader, [data-testid="stToolbar"], footer { display: none !important; visibility: hidden !important; height: 0 !important; }
+            [data-testid="stSidebar"], [data-testid="stTabs"] { display: none !important; }
             .stApp > header { display: none !important; }
             
-            /* INVISIBLE Settings Trigger: Clickable but invisible in corner */
+            /* Target the specific toggle widget to vanish it */
+            div[data-testid="stToggle"] { display: none !important; }
+            
+            /* The ⚙️ Trigger: A tiny, single-square floating glyph */
             div[data-testid="stPopover"] { 
                 position: fixed !important; 
-                top: 0 !important; 
-                left: 0 !important; 
-                z-index: 9999999 !important; 
+                top: 8px !important; 
+                left: 8px !important; 
+                z-index: 99999999 !important; 
+                width: 24px !important;
             }
             div[data-testid="stPopover"] > button { 
-                background: transparent !important; 
-                border: none !important; 
-                width: 50px !important; 
-                height: 50px !important; 
-                opacity: 0 !important; /* TRULY INVISIBLE */
+                background: rgba(255,255,255,0.05) !important; 
+                border: 1px solid rgba(255,255,255,0.1) !important; 
+                padding: 0 !important;
+                width: 24px !important;
+                height: 24px !important;
+                min-height: 24px !important;
+                border-radius: 4px !important;
+                color: rgba(255,255,255,0.2) !important;
                 box-shadow: none !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
             }
-            div[data-testid="stPopover"] > button:hover { opacity: 0.1 !important; } /* Slight hint on hover */
+            div[data-testid="stPopover"] > button:hover { 
+                color: white !important; 
+                background: rgba(255,255,255,0.15) !important;
+            }
+            div[data-testid="stPopover"] > button p { display: none !important; }
         </style>
     """, unsafe_allow_html=True)
     
-    if is_zen:
-        st.markdown("<div id='zen-keeper-wrapper'>", unsafe_allow_html=True)
-        st.toggle("Zen State Keeper", key="zen_toggle")
-        st.markdown("</div>", unsafe_allow_html=True)
+    # Hidden State Tracking (Always present but CSS hidden)
+    st.toggle("Zen State Keeper", key="zen_toggle", label_visibility="collapsed")
     
     if "study_duration" not in st.session_state: st.session_state.study_duration = 50
     if "break_duration" not in st.session_state: st.session_state.break_duration = 10
@@ -365,7 +375,6 @@ def render_focus_mode():
     if is_zen:
         st.markdown("""
         <style>
-            [data-testid="stSidebar"], [data-testid="stTabs"] { display: none !important; }
             div[data-testid="stPopoverContent"] { 
                 background: rgba(10, 15, 30, 0.99) !important; 
                 backdrop-filter: blur(60px) !important; 
@@ -378,7 +387,7 @@ def render_focus_mode():
         """, unsafe_allow_html=True)
         
         with st.popover("⚙️"):
-            st.markdown("### Timer Control")
+            st.markdown("### Timer")
             c1, c2, c3 = st.columns(3)
             if c1.button("▶", key="z_start"):
                 st.session_state.focus_running = True
@@ -394,23 +403,23 @@ def render_focus_mode():
                 st.session_state.focus_end_time = None
             
             st.divider()
-            new_study = st.number_input("Study (min)", 5, 120, st.session_state.study_duration, 5)
+            new_study = st.number_input("Study min", 5, 120, st.session_state.study_duration, 5)
             if new_study != st.session_state.study_duration:
                 st.session_state.study_duration = new_study
                 update_durations(); st.rerun()
                 
-            new_break = st.number_input("Break (min)", 1, 60, st.session_state.break_duration, 1)
+            new_break = st.number_input("Break min", 1, 60, st.session_state.break_duration, 1)
             if new_break != st.session_state.break_duration:
                 st.session_state.break_duration = new_break
                 update_durations(); st.rerun()
             
             st.divider()
-            st.markdown("### Music Control")
+            st.markdown("### Music")
             m1, m2 = st.columns(2)
             if m1.button("🎵 Play", key="m_play"): st.session_state.music_enable = True
             if m2.button("🔇 Stop", key="m_stop"): st.session_state.music_enable = False
             
-            st.file_uploader("Change Audio", type=["mp3", "wav"], key="m_up")
+            st.file_uploader("Upload", type=["mp3", "wav"], key="m_up")
             if st.session_state.m_up: st.session_state.music_upload = st.session_state.m_up
             
             st.divider()
@@ -488,7 +497,6 @@ def render_focus_mode():
             .main .block-container {{ max-width: 100% !important; height: 100vh !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; padding: 0 !important; margin: 0 !important; background: transparent !important; }}
             .timer-display {{ font-size: 16rem !important; color: #ffffff !important; text-shadow: 0 0 80px rgba(0,0,0,1), 0 0 30px rgba(0,0,0,0.9) !important; font-weight: 900 !important; z-index: 1000; }}
             .zen-session-pill {{ background: rgba(0,0,0,0.7) !important; backdrop-filter: blur(20px) !important; padding: 12px 28px !important; border-radius: 40px !important; color: #ffffff !important; font-weight: 900 !important; font-size: 1.8rem !important; border: 2px solid rgba(255,255,255,0.3) !important; text-shadow: 0 4px 10px rgba(0,0,0,0.9) !important; margin-top: 30px; }}
-            #music-player {{ position: fixed !important; top: 40px !important; right: 40px !important; z-index: 99999 !important; }}
         </style>
         """, unsafe_allow_html=True)
         
