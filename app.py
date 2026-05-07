@@ -332,25 +332,25 @@ def render_focus_mode():
                 /* The Trigger: A tiny, minimalist square piece */
                 div[data-testid="stPopover"] { 
                     position: fixed !important; 
-                    top: 8px !important; 
-                    left: 8px !important; 
+                    top: 6px !important; 
+                    left: 6px !important; 
                     z-index: 99999999 !important; 
                 }
                 div[data-testid="stPopover"] > button { 
-                    background: rgba(255,255,255,0.03) !important; 
-                    backdrop-filter: blur(8px) !important;
-                    border: 1px solid rgba(255,255,255,0.08) !important; 
-                    border-radius: 4px !important;
-                    width: 24px !important;
-                    height: 24px !important;
-                    min-height: 24px !important;
+                    background: rgba(255,255,255,0.02) !important; 
+                    backdrop-filter: blur(5px) !important;
+                    border: 1px solid rgba(255,255,255,0.06) !important; 
+                    border-radius: 2px !important;
+                    width: 20px !important;
+                    height: 20px !important;
+                    min-height: 20px !important;
                     padding: 0 !important;
-                    color: rgba(255,255,255,0.1) !important;
+                    color: transparent !important;
                     box-shadow: none !important;
                 }
                 div[data-testid="stPopover"] > button:hover { 
                     background: rgba(255,255,255,0.1) !important;
-                    border-color: rgba(255,255,255,0.3) !important;
+                    border-color: rgba(255,255,255,0.4) !important;
                 }
                 div[data-testid="stPopover"] > button p { display: none !important; }
                 div[data-testid="stPopoverContent"] { 
@@ -402,8 +402,8 @@ def render_focus_mode():
             st.divider()
             st.markdown("### Audio")
             m1, m2 = st.columns(2)
-            if m1.button("🎵 Play", key="m_play"): st.session_state.music_enable = True
-            if m2.button("🔇 Stop", key="m_stop"): st.session_state.music_enable = False
+            if m1.button("▶", key="m_play"): st.session_state.music_enable = True
+            if m2.button("⏹", key="m_stop"): st.session_state.music_enable = False
             
             st.file_uploader("Change Music", type=["mp3", "wav"], key="zen_music_up")
             if st.session_state.zen_music_up:
