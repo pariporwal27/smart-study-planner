@@ -13,3 +13,4 @@ Update: Consolidated Zen Mode toggles to prevent state duplication
 Update: Fixed NameError in render_focus_mode
 Update: Refactored durations to use session state for persistence
 Update: Optimized CSS for hiding Streamlit's default header and footer
+Update: Implemented icon-only minimalist control buttons
