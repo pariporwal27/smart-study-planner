@@ -28,6 +28,7 @@ from utils import (
     calculate_daily_streak,
     classify_productivity_persona,
     create_results_table,
+    format_hours,
     generate_suggestions,
     generate_weekly_plan,
     ensure_progress_file,
@@ -615,7 +616,9 @@ def main():
         st.subheader("Recommended Daily Plan")
         summary_col, model_col = st.columns([1.35, 1])
         with summary_col:
-            st.dataframe(results, use_container_width=True, hide_index=True)
+            display_results = results.copy()
+            display_results["Study Hours"] = display_results["Study Hours"].apply(format_hours)
+            st.dataframe(display_results, use_container_width=True, hide_index=True)
             st.pyplot(plot_allocations(results), clear_figure=True)
 
         with model_col:
@@ -630,7 +633,7 @@ def main():
                     st.write(f"- {reason}")
 
             metric_a, metric_b = st.columns(2)
-            metric_a.metric("Total Daily Time", f"{results['Study Hours'].sum():.2f} h")
+            metric_a.metric("Total Daily Time", format_hours(results['Study Hours'].sum()))
             metric_b.metric("High Priority", int((results["Priority"] == "High").sum()))
 
         if total_hours > 8:
@@ -768,12 +771,11 @@ def main():
         for _, r in subj_group.iterrows():
             day_map[r['Day']][r['Subject']] = float(r['Hours'])
 
-        with col_details:
             st.markdown(f"### {selected}")
             subjects_hours = day_map.get(selected, {})
             total = sum(subjects_hours.values()) if subjects_hours else 0
             
-            st.markdown(f"<div style='font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem;'>{total:.1f}h</div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem;'>{format_hours(total)}</div>", unsafe_allow_html=True)
             
             if subjects_hours:
                 for sub, hrs in subjects_hours.items():
@@ -782,7 +784,7 @@ def main():
                     <div style='display: flex; align-items: center; gap: 10px; margin-bottom: 8px;'>
                         <div style='width: 12px; height: 12px; border-radius: 50%; background: {color};'></div>
                         <div style='flex-grow: 1; font-weight: 600;'>{sub}</div>
-                        <div style='font-weight: 700;'>{hrs:.1f}h</div>
+                        <div style='font-weight: 700;'>{format_hours(hrs)}</div>
                     </div>
                     """, unsafe_allow_html=True)
             else:

@@ -11,6 +11,20 @@ import pandas as pd
 PROGRESS_COLUMNS = ["date", "subject", "planned_hours", "actual_hours"]
 
 
+def format_hours(decimal_hours: float) -> str:
+    """Convert decimal hours to 'Xh Ym' format."""
+    h = int(decimal_hours)
+    m = int(round((decimal_hours - h) * 60))
+    if m == 60:
+        h += 1
+        m = 0
+    if h > 0 and m > 0:
+        return f"{h}h {m}m"
+    if h > 0:
+        return f"{h}h"
+    return f"{m}m"
+
+
 def parse_subjects(subject_text: str) -> list[str]:
     """Convert a comma-separated subject string into a clean subject list."""
     subjects = [subject.strip() for subject in subject_text.split(",")]
