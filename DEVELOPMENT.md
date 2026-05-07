@@ -15,3 +15,4 @@ Update: Refactored durations to use session state for persistence
 Update: Optimized CSS for hiding Streamlit's default header and footer
 Update: Implemented icon-only minimalist control buttons
 Update: Added instant clock updates when adjusting settings
+Update: Hidden settings trigger in corner for ultra-clean look
