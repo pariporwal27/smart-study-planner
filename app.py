@@ -314,56 +314,47 @@ def render_focus_mode():
     """Ultra-stable minimalist focus timer."""
     initialize_focus_state()
     
-    # 1. DEFINE ZEN STATE & NUCLEAR UI WIPE
+    # 1. DEFINE ZEN STATE (Purely from Session State, NO widgets)
     is_zen = st.session_state.get("zen_toggle", False)
     
-    # Aggressive CSS to kill all Streamlit artifacts (ONLY in Zen Mode)
+    # Aggressive CSS to kill all Streamlit artifacts
     if is_zen:
         st.markdown("""
             <style>
-                /* Global Wipe */
+                /* Kill ALL Streamlit Chrome */
                 header, [data-testid="stHeader"], .stAppHeader, [data-testid="stToolbar"], footer { display: none !important; visibility: hidden !important; }
                 [data-testid="stSidebar"], [data-testid="stTabs"] { display: none !important; }
                 .stApp > header { display: none !important; }
                 
-                /* Target the Toggle Widget and its container specifically */
-                div[data-testid="stToggle"], div[data-testid="stWidgetLabel"] { 
-                    display: none !important; 
-                    visibility: hidden !important; 
-                    height: 0 !important;
-                    position: absolute !important;
-                    top: -100px !important;
-                }
-                
-                /* The ⚙️ Trigger: A tiny, TRULY TRANSPARENT square */
+                /* The ⚙️ Trigger: A small glassmorphic square */
                 div[data-testid="stPopover"] { 
                     position: fixed !important; 
-                    top: 0 !important; 
-                    left: 0 !important; 
+                    top: 10px !important; 
+                    left: 10px !important; 
                     z-index: 99999999 !important; 
                 }
                 div[data-testid="stPopover"] > button { 
-                    background: transparent !important; 
-                    background-color: transparent !important;
-                    border: none !important; 
-                    outline: none !important;
+                    background: rgba(255,255,255,0.05) !important; 
+                    backdrop-filter: blur(10px) !important;
+                    border: 1px solid rgba(255,255,255,0.1) !important; 
+                    border-radius: 8px !important;
+                    width: 36px !important;
+                    height: 36px !important;
+                    min-height: 36px !important;
                     padding: 0 !important;
-                    width: 30px !important;
-                    height: 30px !important;
-                    min-height: 30px !important;
-                    color: rgba(255,255,255,0.1) !important;
-                    box-shadow: none !important;
+                    color: rgba(255,255,255,0.3) !important;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
                 }
                 div[data-testid="stPopover"] > button:hover { 
+                    background: rgba(255,255,255,0.1) !important;
                     color: white !important; 
-                }
+                div[data-testid="stPopover"] { position: fixed !important; top: 10px !important; left: 10px !important; z-index: 99999999 !important; }
+                div[data-testid="stPopover"] > button { background: rgba(255,255,255,0.05) !important; backdrop-filter: blur(10px) !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 8px !important; width: 36px !important; height: 36px !important; min-height: 36px !important; padding: 0 !important; color: rgba(255,255,255,0.3) !important; box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important; }
+                div[data-testid="stPopover"] > button:hover { background: rgba(255,255,255,0.1) !important; color: white !important; }
                 div[data-testid="stPopover"] > button p { display: none !important; }
+                div[data-testid="stPopoverContent"] { background: rgba(15, 23, 42, 0.8) !important; backdrop-filter: blur(40px) !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 12px !important; min-width: 260px !important; color: white !important; }
             </style>
         """, unsafe_allow_html=True)
-    
-    # Hidden State Tracking (Only render if in Zen Mode to prevent key collision)
-    if is_zen:
-        st.toggle("Zen State Keeper", key="zen_toggle", label_visibility="collapsed")
     
     if "study_duration" not in st.session_state: st.session_state.study_duration = 50
     if "break_duration" not in st.session_state: st.session_state.break_duration = 10
@@ -375,23 +366,9 @@ def render_focus_mode():
             else:
                 st.session_state.focus_remaining = st.session_state.break_duration * 60
 
-    # 2. UI LAYOUT
     if is_zen:
-        st.markdown("""
-        <style>
-            div[data-testid="stPopoverContent"] { 
-                background: rgba(10, 15, 30, 0.99) !important; 
-                backdrop-filter: blur(60px) !important; 
-                border: 1px solid rgba(255,255,255,0.1) !important; 
-                border-radius: 12px !important;
-                min-width: 280px !important;
-                color: white !important;
-            }
-        </style>
-        """, unsafe_allow_html=True)
-        
         with st.popover("⚙️"):
-            st.markdown("### Timer")
+            st.markdown("### Focus Settings")
             c1, c2, c3 = st.columns(3)
             if c1.button("▶", key="z_start"):
                 st.session_state.focus_running = True
@@ -405,37 +382,26 @@ def render_focus_mode():
                 st.session_state.focus_mode = "Study"
                 st.session_state.focus_remaining = st.session_state.study_duration * 60
                 st.session_state.focus_end_time = None
-            
             st.divider()
-            new_study = st.number_input("Study min", 5, 120, st.session_state.study_duration, 5)
+            new_study = st.number_input("Study (min)", 5, 120, st.session_state.study_duration, 5)
             if new_study != st.session_state.study_duration:
                 st.session_state.study_duration = new_study
                 update_durations(); st.rerun()
-                
-            new_break = st.number_input("Break min", 1, 60, st.session_state.break_duration, 1)
+            new_break = st.number_input("Break (min)", 1, 60, st.session_state.break_duration, 1)
             if new_break != st.session_state.break_duration:
                 st.session_state.break_duration = new_break
                 update_durations(); st.rerun()
-            
             st.divider()
-            st.markdown("### Music")
+            st.markdown("### Audio")
             m1, m2 = st.columns(2)
             if m1.button("🎵 Play", key="m_play"): st.session_state.music_enable = True
             if m2.button("🔇 Stop", key="m_stop"): st.session_state.music_enable = False
-            
-            st.file_uploader("Upload", type=["mp3", "wav"], key="m_up")
-            if st.session_state.m_up: st.session_state.music_upload = st.session_state.m_up
-            
             st.divider()
-            st.selectbox("Atmosphere", ["Night Study", "Daylight Study"], key="zen_theme")
-            
+            st.selectbox("Theme", ["Night Study", "Daylight Study"], key="zen_theme")
             st.divider()
             if st.button("🚪 Exit Zen Mode", use_container_width=True, key="z_exit"):
                 st.session_state.zen_toggle = False
                 st.rerun()
-
-    else:
-        # Standard View
         with st.expander("Timer Settings", expanded=True):
             new_study = st.number_input("Study minutes", 5, 120, st.session_state.study_duration, 5)
             if new_study != st.session_state.study_duration:
