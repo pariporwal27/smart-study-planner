@@ -7,3 +7,4 @@ Update: Added minimalist floating settings popover
 Update: Optimized full-window CSS injection for distraction-free view
 Update: Fixed redirection bug when interacting with settings
 Update: Improved timer synchronization with duration inputs
+Update: Added session tracking and progress pills
