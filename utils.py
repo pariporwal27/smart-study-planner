@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 from datetime import date, timedelta
+import json
 from pathlib import Path
 
 import pandas as pd
 
 
 PROGRESS_COLUMNS = ["date", "subject", "planned_hours", "actual_hours"]
+SETTINGS_FILE = "data/settings.json"
 
 
 def format_hours(decimal_hours: float) -> str:
@@ -444,3 +446,22 @@ def classify_productivity_persona(
         "description": "Your study pattern is still light or irregular.",
         "advice": "Start with small daily targets and build a streak before increasing total hours.",
     }
+
+def load_user_settings(path: str = SETTINGS_FILE) -> dict:
+    """Load user preferences from JSON storage."""
+    settings_path = Path(path)
+    if not settings_path.exists():
+        return {}
+    try:
+        with open(settings_path, "r") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+def save_user_settings(settings: dict, path: str = SETTINGS_FILE) -> None:
+    """Write user preferences to JSON storage."""
+    settings_path = Path(path)
+    settings_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(settings_path, "w") as f:
+        json.dump(settings, f, indent=4)

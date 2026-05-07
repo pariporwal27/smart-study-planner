@@ -39,6 +39,8 @@ from utils import (
     parse_subjects,
     save_progress,
     summarize_weekly_plan,
+    load_user_settings,
+    save_user_settings,
 )
 
 
@@ -290,6 +292,24 @@ def plot_heatmap(progress_summary):
     ax.tick_params(length=0)
     fig.tight_layout()
     return fig
+
+
+def persist_settings():
+    """Save sidebar inputs and subject-specific details to disk."""
+    # Note: We pull directly from session_state keys assigned to widgets
+    to_save = {
+        "subjects_text": st.session_state.get("subjects_text"),
+        "days_left": st.session_state.get("days_left"),
+        "total_hours": st.session_state.get("total_hours"),
+    }
+    # Capture dynamic subject sliders
+    subjects = parse_subjects(st.session_state.get("subjects_text", ""))
+    for s in subjects:
+        d_key, s_key = f"{s}_difficulty", f"{s}_score"
+        if d_key in st.session_state: to_save[d_key] = st.session_state[d_key]
+        if s_key in st.session_state: to_save[s_key] = st.session_state[s_key]
+    
+    save_user_settings(to_save)
 
 
 def initialize_focus_state():
@@ -549,6 +569,26 @@ def main():
     # Force state persistence to prevent "Redirect to Home" bug on reruns
     if st.session_state.get("zen_toggle"):
         st.session_state.zen_toggle = True
+
+    # LOAD & INITIALIZE USER SETTINGS
+    if "settings_loaded" not in st.session_state:
+        saved = load_user_settings()
+        # Define defaults
+        defaults = {
+            "subjects_text": "Math, Physics, Chemistry, English",
+            "days_left": 21,
+            "total_hours": 5.0
+        }
+        for k, v in defaults.items():
+            if k not in st.session_state:
+                st.session_state[k] = saved.get(k, v)
+        
+        # Also pre-load subject specific values if they exist in saved
+        for k, v in saved.items():
+            if k not in st.session_state:
+                st.session_state[k] = v
+                
+        st.session_state.settings_loaded = True
         
     # Use the toggle key directly as the source of truth
     is_zen = st.session_state.get("zen_toggle", False)
@@ -573,12 +613,24 @@ def main():
         st.header("Study Inputs")
         subject_text = st.text_area(
             "Subjects",
-            value="Math, Physics, Chemistry, English",
+            value=st.session_state.get("subjects_text"),
             help="Enter subjects separated by commas.",
+            key="subjects_text",
+            on_change=persist_settings
         )
         subjects = parse_subjects(subject_text)
-        days_left = st.slider("Days left for exam", 1, 120, 21)
-        total_hours = st.slider("Total available study hours per day", 1.0, 14.0, 5.0, 0.5)
+        days_left = st.slider(
+            "Days left for exam", 1, 120, 
+            value=st.session_state.get("days_left"),
+            key="days_left",
+            on_change=persist_settings
+        )
+        total_hours = st.slider(
+            "Total available study hours per day", 1.0, 14.0, 
+            value=st.session_state.get("total_hours"),
+            key="total_hours",
+            on_change=persist_settings
+        )
 
         st.divider()
         st.subheader("Subject Details")
@@ -587,8 +639,18 @@ def main():
 
         for subject in subjects:
             with st.expander(subject, expanded=True):
-                difficulty_by_subject[subject] = st.slider(f"{subject} difficulty", 1, 5, 3, key=f"{subject}_difficulty")
-                score_by_subject[subject] = st.slider(f"{subject} past score", 0, 100, 65, key=f"{subject}_score")
+                difficulty_by_subject[subject] = st.slider(
+                    f"{subject} difficulty", 1, 5, 
+                    value=st.session_state.get(f"{subject}_difficulty", 3),
+                    key=f"{subject}_difficulty",
+                    on_change=persist_settings
+                )
+                score_by_subject[subject] = st.slider(
+                    f"{subject} past score", 0, 100, 
+                    value=st.session_state.get(f"{subject}_score", 65),
+                    key=f"{subject}_score",
+                    on_change=persist_settings
+                )
 
         st.info("Use the sliders as a what-if analysis.")
         st.divider()
