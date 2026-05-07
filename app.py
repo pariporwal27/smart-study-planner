@@ -190,7 +190,7 @@ def plot_allocations(results):
     ax.set_xlabel("Subject")
     ax.set_title("Recommended Daily Study Plan")
     ax.grid(axis="y", alpha=0.25)
-    ax.tick_params(axis="x", rotation=20)
+    ax.tick_params(axis="x", rotation=0)
     fig.tight_layout()
     return fig
 
@@ -452,8 +452,7 @@ def render_focus_mode():
         col_z1, col_z2 = st.columns([1, 1])
         with col_z1: st.toggle("Full Window Mode", key="zen_toggle")
         with col_z2:
-            st.selectbox("Theme", ["Night Study", "Daylight Study"], key="zen_theme_standard")
-            st.session_state.zen_theme = st.session_state.zen_theme_standard
+            st.selectbox("Theme", ["Night Study", "Daylight Study"], key="zen_theme")
     else:
         theme = st.session_state.get("zen_theme", "Night Study")
         bg_css = "background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;"
