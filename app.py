@@ -162,6 +162,16 @@ st.markdown(
     @media (max-width: 560px) {
         .day-card, .big-card { width: 100%; }
     }
+    /* Disable the default Streamlit "running" dimming/blur and status widget */
+    [data-testid="stStatusWidget"] {
+        display: none !important;
+    }
+    .stApp {
+        filter: none !important;
+    }
+    div.stAppViewMain {
+        opacity: 1 !important;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -466,7 +476,7 @@ def render_focus_mode():
     # 4. RENDERING
     if not is_zen:
         st.markdown(f"<div class='timer-display'>{format_seconds(st.session_state.focus_remaining)}</div>", unsafe_allow_html=True)
-        st.markdown(f"<div style='text-align:center; font-weight:700; opacity:0.6; margin-bottom:20px;'>{st.session_state.focus_mode.upper()} SESSION</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='text-align:center; font-weight:700; margin-bottom:20px;'>{st.session_state.focus_mode.upper()} SESSION</div>", unsafe_allow_html=True)
         
         c1, c2, c3 = st.columns(3)
         if c1.button("Start", key="s_start", use_container_width=True):
