@@ -325,7 +325,10 @@ def persist_settings():
     try:
         # Convert all to strings for query params
         param_dict = {k: str(v) for k, v in to_save.items() if v is not None}
-        st.query_params.update(param_dict)
+        if hasattr(st, "query_params"):
+            st.query_params.update(param_dict)
+        elif hasattr(st, "experimental_set_query_params"):
+            st.experimental_set_query_params(**param_dict)
     except Exception:
         pass
 
@@ -603,15 +606,22 @@ def main():
         
         # 3. Layer in URL Query Parameters (High Priority for Refreshes)
         try:
-            # Modern Streamlit API
-            params = st.query_params
-            for k in params:
-                val = params[k]
-                if k in ["days_left"]: state_init[k] = int(val)
-                elif k in ["total_hours"]: state_init[k] = float(val)
-                else: state_init[k] = val
-        except Exception:
-            pass # Fallback for older Streamlit versions or issues
+            # Check both modern and experimental APIs
+            params = {}
+            if hasattr(st, "query_params"):
+                params = st.query_params.to_dict()
+            elif hasattr(st, "experimental_get_query_params"):
+                params = {k: v[0] for k, v in st.experimental_get_query_params().items()}
+                
+            for k, val in params.items():
+                if k == "days_left": state_init[k] = int(val)
+                elif k == "total_hours": state_init[k] = float(val)
+                elif k == "subjects_text": state_init[k] = val
+                # Handle dynamic subject-specific keys
+                elif "_difficulty" in k: state_init[k] = int(val)
+                elif "_score" in k: state_init[k] = int(val)
+        except Exception as e:
+            pass
             
         # 4. Apply to session_state
         for k, v in state_init.items():
@@ -658,6 +668,11 @@ def main():
             value=st.session_state.get("total_hours"),
             key="total_hours",
         )
+
+        if st.button("💾 Save Current Setup", use_container_width=True):
+            persist_settings()
+            st.success("Setup saved to URL!")
+            st.balloons()
 
         st.divider()
         st.subheader("Subject Details")
