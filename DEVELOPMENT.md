@@ -9,3 +9,4 @@ Update: Fixed redirection bug when interacting with settings
 Update: Improved timer synchronization with duration inputs
 Update: Added session tracking and progress pills
 Update: Enhanced visibility in Night Mode with high-contrast shadows
+Update: Consolidated Zen Mode toggles to prevent state duplication
