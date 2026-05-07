@@ -301,7 +301,10 @@ def generate_weekly_plan(
     )
 
     for day in weekdays:
-        day_total = total_weekly_hours * day_multipliers[day] / multiplier_total
+        # Redistribute weekly budget but ensure we never exceed the user's daily limit
+        day_total = (total_weekly_hours * day_multipliers[day]) / multiplier_total
+        day_total = min(day_total, daily_hours)
+        
         weighted_subjects = subjects.copy()
         weighted_subjects["day_weight"] = weighted_subjects["urgency"]
 
