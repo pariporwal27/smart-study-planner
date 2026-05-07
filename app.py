@@ -329,33 +329,38 @@ def render_focus_mode():
                 [data-testid="stSidebar"], [data-testid="stTabs"] { display: none !important; }
                 .stApp > header { display: none !important; }
                 
-                /* The ⚙️ Trigger: A small glassmorphic square */
+                /* The Trigger: A tiny, minimalist square piece */
                 div[data-testid="stPopover"] { 
                     position: fixed !important; 
-                    top: 10px !important; 
-                    left: 10px !important; 
+                    top: 8px !important; 
+                    left: 8px !important; 
                     z-index: 99999999 !important; 
                 }
                 div[data-testid="stPopover"] > button { 
-                    background: rgba(255,255,255,0.05) !important; 
-                    backdrop-filter: blur(10px) !important;
-                    border: 1px solid rgba(255,255,255,0.1) !important; 
-                    border-radius: 8px !important;
-                    width: 36px !important;
-                    height: 36px !important;
-                    min-height: 36px !important;
+                    background: rgba(255,255,255,0.03) !important; 
+                    backdrop-filter: blur(8px) !important;
+                    border: 1px solid rgba(255,255,255,0.08) !important; 
+                    border-radius: 4px !important;
+                    width: 24px !important;
+                    height: 24px !important;
+                    min-height: 24px !important;
                     padding: 0 !important;
-                    color: rgba(255,255,255,0.3) !important;
-                    box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+                    color: rgba(255,255,255,0.1) !important;
+                    box-shadow: none !important;
                 }
                 div[data-testid="stPopover"] > button:hover { 
                     background: rgba(255,255,255,0.1) !important;
-                    color: white !important; 
-                div[data-testid="stPopover"] { position: fixed !important; top: 10px !important; left: 10px !important; z-index: 99999999 !important; }
-                div[data-testid="stPopover"] > button { background: rgba(255,255,255,0.05) !important; backdrop-filter: blur(10px) !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 8px !important; width: 36px !important; height: 36px !important; min-height: 36px !important; padding: 0 !important; color: rgba(255,255,255,0.3) !important; box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important; }
-                div[data-testid="stPopover"] > button:hover { background: rgba(255,255,255,0.1) !important; color: white !important; }
+                    border-color: rgba(255,255,255,0.3) !important;
+                }
                 div[data-testid="stPopover"] > button p { display: none !important; }
-                div[data-testid="stPopoverContent"] { background: rgba(15, 23, 42, 0.8) !important; backdrop-filter: blur(40px) !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 12px !important; min-width: 260px !important; color: white !important; }
+                div[data-testid="stPopoverContent"] { 
+                    background: rgba(15, 23, 42, 0.8) !important; 
+                    backdrop-filter: blur(40px) !important; 
+                    border: 1px solid rgba(255,255,255,0.1) !important; 
+                    border-radius: 12px !important;
+                    min-width: 260px !important;
+                    color: white !important;
+                }
             </style>
         """, unsafe_allow_html=True)
     
@@ -399,6 +404,11 @@ def render_focus_mode():
             m1, m2 = st.columns(2)
             if m1.button("🎵 Play", key="m_play"): st.session_state.music_enable = True
             if m2.button("🔇 Stop", key="m_stop"): st.session_state.music_enable = False
+            
+            st.file_uploader("Change Music", type=["mp3", "wav"], key="zen_music_up")
+            if st.session_state.zen_music_up:
+                st.session_state.music_upload = st.session_state.zen_music_up
+            
             st.divider()
             st.selectbox("Theme", ["Night Study", "Daylight Study"], key="zen_theme")
             st.divider()
