@@ -314,7 +314,10 @@ def render_focus_mode():
     """Ultra-stable minimalist focus timer."""
     initialize_focus_state()
     
-    # 1. DEFINE ZEN STATE (Purely from Session State, NO widgets)
+    # 1. PRESERVE ZEN STATE (Crucial for Streamlit Reruns)
+    if st.session_state.get("zen_toggle"):
+        st.session_state.zen_toggle = True
+    
     is_zen = st.session_state.get("zen_toggle", False)
     
     # Aggressive CSS to kill all Streamlit artifacts
@@ -532,6 +535,10 @@ def _render_header_audio():
             pass
 
 def main():
+    # Force state persistence to prevent "Redirect to Home" bug on reruns
+    if st.session_state.get("zen_toggle"):
+        st.session_state.zen_toggle = True
+        
     # Use the toggle key directly as the source of truth
     is_zen = st.session_state.get("zen_toggle", False)
 
