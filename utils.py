@@ -275,9 +275,12 @@ def generate_weekly_plan(
     results: pd.DataFrame,
     daily_hours: float,
     variation: int = 0,
+    start_date: date | None = None,
 ) -> pd.DataFrame:
-    """Create a Monday-Sunday plan with harder subjects earlier in the week."""
-    weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    """Create a rolling 7-day plan with harder subjects earlier in the week."""
+    if start_date is None:
+        start_date = date.today()
+
     day_multipliers = {
         "Monday": 1.15,
         "Tuesday": 1.1,
@@ -300,21 +303,27 @@ def generate_weekly_plan(
         + 20 / subjects["Days Left"].clip(lower=1)
     )
 
-    for day in weekdays:
+    for i in range(7):
+        current_date = start_date + timedelta(days=i)
+        weekday_name = current_date.strftime("%A")
+        # Format the day label for the UI (e.g., "Thu, 07 May")
+        day_label = current_date.strftime("%a, %d %b")
+        
         # Redistribute weekly budget but ensure we never exceed the user's daily limit
-        day_total = (total_weekly_hours * day_multipliers[day]) / multiplier_total
+        multiplier = day_multipliers.get(weekday_name, 1.0)
+        day_total = (total_weekly_hours * multiplier) / multiplier_total
         day_total = min(day_total, daily_hours)
         
         weighted_subjects = subjects.copy()
         weighted_subjects["day_weight"] = weighted_subjects["urgency"]
 
         # Put harder subjects earlier, and leave weekends lighter with more review.
-        if day in hard_subject_days:
+        if weekday_name in hard_subject_days:
             weighted_subjects["day_weight"] += weighted_subjects["Difficulty"] * 0.8
         else:
             weighted_subjects["day_weight"] += (100 - weighted_subjects["Past Score"]) / 25
 
-        revision_share = 0.15 if day in hard_subject_days else 0.28
+        revision_share = 0.15 if weekday_name in hard_subject_days else 0.28
         revision_share = min(revision_share + variation_factor, 0.35)
         subject_time = day_total * (1 - revision_share)
         weight_total = weighted_subjects["day_weight"].sum()
@@ -324,7 +333,8 @@ def generate_weekly_plan(
             if hours >= 0.2:
                 plan_rows.append(
                     {
-                        "Day": day,
+                        "Day": day_label,
+                        "Date": current_date, # Keep raw date for sorting if needed
                         "Subject": row["Subject"],
                         "Session Type": "Deep Study" if row["Difficulty"] >= 4 else "Practice",
                         "Hours": round(float(hours), 2),
@@ -336,7 +346,8 @@ def generate_weekly_plan(
         ).iloc[0]["Subject"]
         plan_rows.append(
             {
-                "Day": day,
+                "Day": day_label,
+                "Date": current_date,
                 "Subject": revision_subject,
                 "Session Type": "Revision",
                 "Hours": round(float(day_total * revision_share), 2),
@@ -351,10 +362,10 @@ def summarize_weekly_plan(weekly_plan: pd.DataFrame) -> pd.DataFrame:
     if weekly_plan.empty:
         return pd.DataFrame(columns=["Day", "Total Hours"])
 
-    day_order = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-    summary = weekly_plan.groupby("Day", as_index=False)["Hours"].sum()
-    summary["Day"] = pd.Categorical(summary["Day"], categories=day_order, ordered=True)
-    return summary.sort_values("Day").rename(columns={"Hours": "Total Hours"})
+    # Group by Day and Date to maintain the link for sorting
+    summary = weekly_plan.groupby(["Day", "Date"], as_index=False)["Hours"].sum()
+    summary = summary.sort_values("Date")
+    return summary.rename(columns={"Hours": "Total Hours"})
 
 
 def get_productive_day_metrics(progress: pd.DataFrame) -> dict:

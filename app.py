@@ -738,15 +738,17 @@ def main():
         daily_breakdown = summarize_weekly_plan(weekly_plan)
         
         # Day selection row (Horizontal "Tabs")
-        day_order = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-        if 'weekly_selected_day' not in st.session_state:
-            st.session_state['weekly_selected_day'] = "Monday"
+        available_days = daily_breakdown["Day"].tolist()
+        
+        if 'weekly_selected_day' not in st.session_state or st.session_state['weekly_selected_day'] not in available_days:
+            st.session_state['weekly_selected_day'] = available_days[0]
 
         st.write("---")
         # Render day buttons in a horizontal row
-        day_btn_cols = st.columns(7)
-        for i, d in enumerate(day_order):
+        day_btn_cols = st.columns(len(available_days))
+        for i, d in enumerate(available_days):
             is_selected = st.session_state['weekly_selected_day'] == d
+            # Use a smaller font or cleaner label if needed, but the full date is good
             if day_btn_cols[i].button(d, key=f"btn_{d}", use_container_width=True, type="primary" if is_selected else "secondary"):
                 st.session_state['weekly_selected_day'] = d
                 st.rerun()
@@ -762,7 +764,7 @@ def main():
         palette = px.colors.qualitative.Plotly
         subject_colors = {s: palette[i % len(palette)] for i, s in enumerate(subjects_list)}
         
-        day_map = {d: {} for d in day_order}
+        day_map = {d: {} for d in available_days}
         for _, r in subj_group.iterrows():
             day_map[r['Day']][r['Subject']] = float(r['Hours'])
 
