@@ -22,7 +22,7 @@ from model import (
     load_training_data,
     train_models,
 )
-from utils import (
+from planner_utils import (
     build_subject_inputs,
     build_progress_summary,
     calculate_daily_streak,
