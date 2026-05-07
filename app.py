@@ -949,6 +949,7 @@ def main():
         st.subheader("Progress Data")
         st.dataframe(progress, use_container_width=True, hide_index=True)
 
+    st.markdown("<div id='focus-mode'></div>", unsafe_allow_html=True)
     with focus_tab:
         render_focus_mode()
 
