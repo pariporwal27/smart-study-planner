@@ -456,6 +456,12 @@ def render_focus_mode():
             st.divider()
             if st.button("🚪 Exit Zen Mode", use_container_width=True, key="z_exit"):
                 st.session_state.zen_toggle = False
+                st.markdown("""
+                <script>
+                    window.location.hash = "#focus-mode";
+                </script>
+                """, unsafe_allow_html=True)
+
                 st.rerun()
     else:
         # Standard View Settings
