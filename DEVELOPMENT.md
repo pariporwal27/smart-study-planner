@@ -17,3 +17,4 @@ Update: Implemented icon-only minimalist control buttons
 Update: Added instant clock updates when adjusting settings
 Update: Hidden settings trigger in corner for ultra-clean look
 Update: Nuclear-level cleanup of Streamlit bars and UI artifacts
+Update: Added Play/Stop buttons for background audio in Zen view
