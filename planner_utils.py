@@ -28,9 +28,22 @@ def format_hours(decimal_hours: float) -> str:
     return f"{m}m"
 
 
-def parse_subjects(subject_text: str) -> list[str]:
-    """Convert a comma-separated subject string into a clean subject list."""
-    subjects = [subject.strip() for subject in subject_text.split(",")]
+def parse_subjects(subject_text):
+
+    # If already a list
+    if isinstance(subject_text, list):
+        return [str(subject).strip() for subject in subject_text]
+
+    # Handle None safely
+    if subject_text is None:
+        return []
+
+    # Convert anything else to string
+    subjects = [
+        subject.strip()
+        for subject in str(subject_text).split(",")
+    ]
+
     return [subject for subject in subjects if subject]
 
 
@@ -254,18 +267,36 @@ def get_consistency_badge(consistency: float, is_overworked: bool = False) -> st
 
 
 def calculate_daily_streak(progress: pd.DataFrame, today: date | None = None) -> int:
-    """Count consecutive logged days ending today or yesterday."""
-    if progress.empty:
+    """Count consecutive logged days."""
+    if progress.empty or "date" not in progress.columns:
         return 0
 
     today = today or date.today()
-    logged_dates = set(pd.to_datetime(progress["date"]).dt.date)
-    cursor = today if today in logged_dates else today - timedelta(days=1)
-    streak = 0
 
-    while cursor in logged_dates:
-        streak += 1
-        cursor -= timedelta(days=1)
+    # Unique sorted dates
+    dates = sorted(
+        set(pd.to_datetime(progress["date"]).dt.date),
+        reverse=True
+    )
+
+    if not dates:
+        return 0
+
+    # Allow streak if latest log is today or yesterday
+    latest = dates[0]
+
+    if latest not in [today, today - timedelta(days=1)]:
+        return 0
+
+    streak = 0
+    current = latest
+
+    for d in dates:
+        if d == current:
+            streak += 1
+            current -= timedelta(days=1)
+        else:
+            break
 
     return streak
 
