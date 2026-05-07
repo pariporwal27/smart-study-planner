@@ -320,7 +320,14 @@ def persist_settings():
         if s_key in st.session_state: to_save[s_key] = st.session_state[s_key]
     
     save_user_settings(to_save)
-    # st.toast("Settings saved") # Optional: debug
+    
+    # Sync with URL query parameters for refresh persistence
+    try:
+        # Convert all to strings for query params
+        param_dict = {k: str(v) for k, v in to_save.items() if v is not None}
+        st.query_params.update(param_dict)
+    except Exception:
+        pass
 
 
 def initialize_focus_state():
@@ -583,19 +590,31 @@ def main():
 
     # LOAD & INITIALIZE USER SETTINGS
     if "settings_loaded" not in st.session_state:
-        saved = load_user_settings()
-        # Define defaults
-        defaults = {
+        # 1. Start with defaults
+        state_init = {
             "subjects_text": "Math, Physics, Chemistry, English",
             "days_left": 21,
             "total_hours": 5.0
         }
-        for k, v in defaults.items():
-            if k not in st.session_state:
-                st.session_state[k] = saved.get(k, v)
         
-        # Also pre-load subject specific values if they exist in saved
-        for k, v in saved.items():
+        # 2. Layer in saved JSON settings (if local)
+        saved_json = load_user_settings()
+        state_init.update(saved_json)
+        
+        # 3. Layer in URL Query Parameters (High Priority for Refreshes)
+        try:
+            # Modern Streamlit API
+            params = st.query_params
+            for k in params:
+                val = params[k]
+                if k in ["days_left"]: state_init[k] = int(val)
+                elif k in ["total_hours"]: state_init[k] = float(val)
+                else: state_init[k] = val
+        except Exception:
+            pass # Fallback for older Streamlit versions or issues
+            
+        # 4. Apply to session_state
+        for k, v in state_init.items():
             if k not in st.session_state:
                 st.session_state[k] = v
                 
