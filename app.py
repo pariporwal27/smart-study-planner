@@ -310,6 +310,7 @@ def persist_settings():
         if s_key in st.session_state: to_save[s_key] = st.session_state[s_key]
     
     save_user_settings(to_save)
+    # st.toast("Settings saved") # Optional: debug
 
 
 def initialize_focus_state():
@@ -616,20 +617,17 @@ def main():
             value=st.session_state.get("subjects_text"),
             help="Enter subjects separated by commas.",
             key="subjects_text",
-            on_change=persist_settings
         )
         subjects = parse_subjects(subject_text)
         days_left = st.slider(
             "Days left for exam", 1, 120, 
             value=st.session_state.get("days_left"),
             key="days_left",
-            on_change=persist_settings
         )
         total_hours = st.slider(
             "Total available study hours per day", 1.0, 14.0, 
             value=st.session_state.get("total_hours"),
             key="total_hours",
-            on_change=persist_settings
         )
 
         st.divider()
@@ -643,13 +641,11 @@ def main():
                     f"{subject} difficulty", 1, 5, 
                     value=st.session_state.get(f"{subject}_difficulty", 3),
                     key=f"{subject}_difficulty",
-                    on_change=persist_settings
                 )
                 score_by_subject[subject] = st.slider(
                     f"{subject} past score", 0, 100, 
                     value=st.session_state.get(f"{subject}_score", 65),
                     key=f"{subject}_score",
-                    on_change=persist_settings
                 )
 
         st.info("Use the sliders as a what-if analysis.")
@@ -900,6 +896,8 @@ def main():
 
     with focus_tab:
         render_focus_mode()
+
+    persist_settings()
 
 
 if __name__ == "__main__":

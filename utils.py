@@ -10,7 +10,8 @@ import pandas as pd
 
 
 PROGRESS_COLUMNS = ["date", "subject", "planned_hours", "actual_hours"]
-SETTINGS_FILE = "data/settings.json"
+BASE_DIR = Path(__file__).resolve().parent
+SETTINGS_FILE = BASE_DIR / "data" / "settings.json"
 
 
 def format_hours(decimal_hours: float) -> str:
@@ -146,8 +147,10 @@ def generate_suggestions(results: pd.DataFrame) -> list[dict]:
     return suggestions
 
 
-def ensure_progress_file(path: str = "data/progress.csv") -> Path:
+def ensure_progress_file(path: str | Path | None = None) -> Path:
     """Create progress storage with headers if it does not already exist."""
+    if path is None:
+        path = BASE_DIR / "data" / "progress.csv"
     progress_path = Path(path)
     progress_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -157,7 +160,7 @@ def ensure_progress_file(path: str = "data/progress.csv") -> Path:
     return progress_path
 
 
-def load_progress(path: str = "data/progress.csv") -> pd.DataFrame:
+def load_progress(path: str | Path | None = None) -> pd.DataFrame:
     """Load logged progress from CSV storage."""
     progress_path = ensure_progress_file(path)
     progress = pd.read_csv(progress_path)
@@ -175,7 +178,7 @@ def save_progress(
     results: pd.DataFrame,
     actual_hours_by_subject: dict[str, float],
     progress_date: date,
-    path: str = "data/progress.csv",
+    path: str | Path | None = None,
 ) -> None:
     """Append or replace one day's progress rows for the current subjects."""
     existing_progress = load_progress(path)
