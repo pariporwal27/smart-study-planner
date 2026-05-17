@@ -356,11 +356,11 @@ def render_focus_mode():
     """Ultra-stable minimalist focus timer."""
     initialize_focus_state()
     
-    # 1. PRESERVE ZEN STATE (Crucial for Streamlit Reruns)
-    if st.session_state.get("zen_toggle"):
-        st.session_state.zen_toggle = True
-    
+    # 1. Preserve Zen state across reruns.
+    # IMPORTANT: Do NOT force zen_toggle back to True here; it prevents
+    # exiting Zen mode when the user hits the Exit Zen Mode button.
     is_zen = st.session_state.get("zen_toggle", False)
+
     
     # Aggressive CSS to kill all Streamlit artifacts
     if is_zen:
@@ -588,11 +588,14 @@ def _render_header_audio():
             pass
 
 def main():
-    # Force state persistence to prevent "Redirect to Home" bug on reruns
-    if st.session_state.get("zen_toggle"):
-        st.session_state.zen_toggle = True
+    # Persist/restore which tab was active when Zen mode was opened.
+    # This keeps the user on the same page after exiting Zen.
+    if "zen_return_tab" not in st.session_state:
+        st.session_state.zen_return_tab = "Focus Mode"
 
     # LOAD & INITIALIZE USER SETTINGS
+
+
     if "settings_loaded" not in st.session_state:
         # 1. Start with defaults
         state_init = {
