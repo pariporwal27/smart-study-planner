@@ -1,28 +1,34 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict, Any
+import os
+import pandas as pd
+
 from app.services.model import train_models, load_training_data, allocate_study_hours
-from app.services.planner_utils import build_subject_inputs
+from app.services.planner_utils import build_subject_inputs, calculate_priority
 
 router = APIRouter()
 
-# Global variable to cache the trained model
+# Cache the trained model at startup
 ML_MODEL_BUNDLE = None
 
-def get_ml_model():
+def _get_or_train_model():
     global ML_MODEL_BUNDLE
     if ML_MODEL_BUNDLE is None:
+        # Look for data relative to the backend root
+        base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        csv_path = os.path.join(base, "data", "sample_data.csv")
         try:
-            data = load_training_data()
+            data = pd.read_csv(csv_path)
             ML_MODEL_BUNDLE = train_models(data)
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Failed to load ML model: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Failed to train ML model: {str(e)} | path tried: {csv_path}")
     return ML_MODEL_BUNDLE
 
 class SubjectInput(BaseModel):
     name: str
-    difficulty: int  # 1 to 5
-    past_score: int  # 0 to 100
+    difficulty: int   # 1-5
+    past_score: int   # 0-100
 
 class ScheduleRequest(BaseModel):
     subjects: List[SubjectInput]
@@ -30,45 +36,48 @@ class ScheduleRequest(BaseModel):
     total_hours_per_day: float
 
 @router.post("/generate", response_model=Dict[str, Any])
-def generate_schedule(request: ScheduleRequest, model_bundle = Depends(get_ml_model)):
-    """
-    Generate a smart study schedule using the ML model.
-    """
-    subjects_list = [s.name for s in request.subjects]
-    difficulty_dict = {s.name: s.difficulty for s in request.subjects}
-    score_dict = {s.name: s.past_score for s in request.subjects}
-    
-    # Build inputs for the model
+def generate_schedule(request: ScheduleRequest):
+    """Generate a smart study schedule using the ML model."""
+    model_bundle = _get_or_train_model()
+
+    subject_inputs = [
+        {
+            "subject": s.name,
+            "difficulty": s.difficulty,
+            "past_score": s.past_score,
+            "days_left": request.days_left,
+        }
+        for s in request.subjects
+    ]
+
     try:
-        subject_features = build_subject_inputs(
-            subjects=subjects_list,
-            difficulty_by_subject=difficulty_dict,
-            score_by_subject=score_dict,
-            days_left=request.days_left
-        )
-        
-        # Allocate hours using the best trained model
-        allocated_hours = allocate_study_hours(
+        allocated = allocate_study_hours(
             model=model_bundle.best_model,
-            subject_inputs=subject_features,
-            total_hours=request.total_hours_per_day
+            subject_inputs=subject_inputs,
+            total_available_hours=request.total_hours_per_day,
         )
-        
-        # Format the output
+
+        avg = sum(allocated) / len(allocated) if allocated.any() else 1
+
         result = []
-        for idx, row in subject_features.iterrows():
-            subj_name = row['Subject']
-            hours = allocated_hours[idx]
+        for inp, hrs in zip(subject_inputs, allocated):
+            priority = calculate_priority(
+                difficulty=inp["difficulty"],
+                past_score=inp["past_score"],
+                days_left=inp["days_left"],
+                allocated_hours=float(hrs),
+                average_hours=avg,
+            )
             result.append({
-                "subject": subj_name,
-                "allocated_hours": float(hours),
-                "priority": row['Priority']
+                "subject": inp["subject"],
+                "allocated_hours": round(float(hrs), 2),
+                "priority": priority,
             })
-            
+
         return {
             "schedule": result,
-            "model_used": model_bundle.best_model_name
+            "model_used": model_bundle.best_model_name,
         }
-        
+
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

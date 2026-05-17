@@ -349,7 +349,57 @@ html, body {
   font-weight: 600;
   letter-spacing: 0.25em;
   text-transform: uppercase;
-  margin-bottom: 3rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Zen Presets */
+.zen-presets {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.zen-preset-btn {
+  padding: 0.4rem 1rem;
+  border-radius: 99px;
+  background: transparent;
+  color: #4a4a7a;
+  border: 1px solid #1e1e3a;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+.zen-preset-btn:hover, .zen-preset-btn.active {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99,102,241,0.4);
+  color: #a5b4fc;
+}
+
+.zen-custom-input {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  align-items: center;
+}
+
+.zen-input {
+  background: #0d0d1f;
+  border: 1px solid #1e1e3a;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-family: inherit;
+  width: 160px;
+  text-align: center;
+  outline: none;
+}
+.zen-input:focus {
+  border-color: var(--accent);
 }
 
 .zen-clock-wrapper {
