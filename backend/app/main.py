@@ -10,7 +10,7 @@ from app.models.user import User
 from app.models.subject import Subject
 from app.models.task import Task
 
-from app.api import schedule
+from app.api import schedule, subjects, tasks
 
 # Create database tables
 base.Base.metadata.create_all(bind=engine)
@@ -27,6 +27,8 @@ app.add_middleware(
 )
 
 app.include_router(schedule.router, prefix="/api/v1/schedule", tags=["Schedule"])
+app.include_router(subjects.router, prefix="/api/v1/subjects", tags=["Subjects"])
+app.include_router(tasks.router, prefix="/api/v1/tasks", tags=["Tasks"])
 
 @app.get("/")
 def read_root():
@@ -35,4 +37,5 @@ def read_root():
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
+
 
