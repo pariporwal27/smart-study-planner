@@ -3,5 +3,8 @@ uvicorn
 sqlalchemy
 asyncpg
 pydantic
+pydantic-settings
 python-jose
 passlib
+scikit-learn
+pandas
