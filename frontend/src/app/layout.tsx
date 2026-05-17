@@ -1,5 +1,6 @@
 import './globals.css';
 import Link from 'next/link';
+import MusicPlayer from '@/components/MusicPlayer';
 
 export const metadata = {
   title: 'Smart Study Planner',
@@ -25,6 +26,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <span className="icon">🧘</span> Zen Mode
               </Link>
             </nav>
+            <div className="sidebar-footer">
+              <div className="sidebar-tip">💡 Tip: Use Zen Mode for deep focus sessions!</div>
+            </div>
           </aside>
 
           {/* Main Content */}
@@ -32,6 +36,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {children}
           </main>
         </div>
+
+        {/* Global Music Player - fixed to bottom */}
+        <MusicPlayer />
       </body>
     </html>
   );
