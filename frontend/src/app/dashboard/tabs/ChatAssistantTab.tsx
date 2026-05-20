@@ -10,6 +10,7 @@ interface Message {
 }
 
 const PRESETS = [
+  "Show my current syllabus and tasks",
   "How can I manage study burnout?",
   "What is the Feynman Technique?",
   "Recommend a study strategy for Physics",

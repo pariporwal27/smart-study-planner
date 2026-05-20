@@ -28,6 +28,8 @@ interface Balloon {
   left: number;
   color: string;
   delay: number;
+  duration: number;
+  size: number;
 }
 
 const BALLOON_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'];
@@ -71,19 +73,21 @@ export default function Dashboard() {
   const triggerCelebration = () => {
     const list: Balloon[] = [];
     const baseId = Date.now();
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 24; i++) {
       list.push({
         id: baseId + i,
         left: Math.random() * 100,
         color: BALLOON_COLORS[Math.floor(Math.random() * BALLOON_COLORS.length)],
-        delay: Math.random() * 1.5
+        delay: Math.random() * 2.0,
+        duration: 6.0 + Math.random() * 4.0, // Stays longer: between 6s and 10s!
+        size: 45 + Math.random() * 25 // Stays varied: between 45px and 70px!
       });
     }
     setBalloons(list);
     // Cleanup balloons after they finish floating
     setTimeout(() => {
       setBalloons([]);
-    }, 6000);
+    }, 13000);
   };
 
   return (
@@ -97,22 +101,22 @@ export default function Dashboard() {
               position: 'absolute',
               bottom: '-120px',
               left: `${b.left}%`,
-              width: '60px',
-              height: '75px',
+              width: `${b.size}px`,
+              height: `${b.size * 1.25}px`,
               background: b.color,
               borderRadius: '50% 50% 50% 50% / 40% 40% 60% 60%',
-              boxShadow: 'inset -8px -8px 0 rgba(0,0,0,0.15), 0 10px 20px rgba(0,0,0,0.1)',
-              animation: `floatUp 4.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards`,
+              boxShadow: 'inset -8px -8px 0 rgba(0,0,0,0.15), 0 10px 20px rgba(0,0,0,0.15)',
+              animation: `floatUpSway ${b.duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards`,
               animationDelay: `${b.delay}s`
             }}
           >
             {/* Balloon String */}
             <div style={{
               position: 'absolute',
-              bottom: '-25px',
+              bottom: `-${b.size * 0.4}px`,
               left: '50%',
               width: '2px',
-              height: '25px',
+              height: `${b.size * 0.4}px`,
               background: 'rgba(255,255,255,0.4)',
               transform: 'translateX(-50%)'
             }} />
@@ -164,27 +168,34 @@ export default function Dashboard() {
         {/* 🌓 Premium Theme Toggle Button */}
         <button 
           onClick={toggleTheme}
+          title={isLight ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
           style={{
             background: 'var(--bg-secondary)',
             border: '1px solid var(--border)',
             color: 'var(--text-primary)',
-            padding: '0.6rem 1.2,0',
-            paddingLeft: '1.2rem',
-            paddingRight: '1.2rem',
-            borderRadius: '10px',
+            width: '42px',
+            height: '42px',
+            borderRadius: '50%',
             cursor: 'pointer',
-            fontSize: '0.85rem',
-            fontWeight: 600,
+            fontSize: '1.2rem',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.5rem',
+            justifyContent: 'center',
             transition: 'all 0.2s',
-            fontFamily: 'inherit'
+            boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
           }}
-          onMouseOver={e => { e.currentTarget.style.borderColor = 'var(--accent)'; }}
-          onMouseOut={e => { e.currentTarget.style.borderColor = 'var(--border)'; }}
+          onMouseOver={e => { 
+            e.currentTarget.style.borderColor = 'var(--accent)'; 
+            e.currentTarget.style.transform = 'scale(1.08)';
+            e.currentTarget.style.boxShadow = '0 0 15px rgba(99, 102, 241, 0.4)';
+          }}
+          onMouseOut={e => { 
+            e.currentTarget.style.borderColor = 'var(--border)'; 
+            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+          }}
         >
-          {isLight ? '🌙 Go Dark' : '☀️ Go Light'}
+          {isLight ? '🌙' : '☀️'}
         </button>
       </div>
 
@@ -206,11 +217,27 @@ export default function Dashboard() {
       </div>
 
       <style jsx global>{`
-        @keyframes floatUp {
-          0% { transform: translateY(0) rotate(0deg); opacity: 0; }
-          10% { opacity: 0.9; }
-          90% { opacity: 0.9; }
-          100% { transform: translateY(-120vh) rotate(20deg); opacity: 0; }
+        @keyframes floatUpSway {
+          0% { 
+            transform: translateY(0) translateX(0) rotate(0deg); 
+            opacity: 0; 
+          }
+          10% { 
+            opacity: 0.95; 
+          }
+          25% {
+            transform: translateY(-30vh) translateX(-20px) rotate(-10deg);
+          }
+          50% {
+            transform: translateY(-65vh) translateX(20px) rotate(10deg);
+          }
+          75% {
+            transform: translateY(-95vh) translateX(-15px) rotate(-6deg);
+          }
+          100% { 
+            transform: translateY(-130vh) translateX(5px) rotate(5deg); 
+            opacity: 0; 
+          }
         }
         @keyframes slideIn {
           from { transform: translateX(120%); opacity: 0; }

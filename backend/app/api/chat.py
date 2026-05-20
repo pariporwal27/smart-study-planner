@@ -1,6 +1,10 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 import random
+from sqlalchemy.orm import Session
+from app.db.session import get_db
+from app.models.subject import Subject
+from app.models.task import Task
 
 router = APIRouter()
 
@@ -19,8 +23,42 @@ STUDY_TIPS = [
   "For physics problems, always list your known variables first before picking an equation."
 ]
 
-def generate_study_assistant_reply(msg: str, subj: str) -> dict:
+def generate_study_assistant_reply(msg: str, subj: str, db: Session = None) -> dict:
     m = msg.lower().strip()
+
+    # 0. Syllabus / Subjects database-aware check
+    if "syllabus" in m or "subject" in m or "chapter" in m or "topic" in m or "course" in m or "study load" in m:
+        if db:
+            subjects = db.query(Subject).filter(Subject.user_id == 1).all()
+            if subjects:
+                reply = "📚 **Here is your current Study Syllabus and Course Outline:**\n\n"
+                for s in subjects:
+                    reply += f"🔹 **{s.name}** (Difficulty: {s.difficulty_level}/5 | Target: {s.target_weekly_hours} hrs/week)\n"
+                    # Fetch tasks for this subject
+                    tasks = db.query(Task).filter(Task.subject_id == s.id).all()
+                    if tasks:
+                        reply += "   *Tasks/Modules:*\n"
+                        for t in tasks:
+                            status_emoji = "✅ Completed" if t.completed else "⏳ In Progress"
+                            reply += f"   - {t.title} ({status_emoji})\n"
+                    else:
+                        reply += "   *No specific tasks or revision modules added yet for this subject.*\n"
+                    reply += "\n"
+                reply += "Would you like me to recommend a tailored active recall schedule or suggest customized resources for any of these subjects?"
+                return {
+                    "reply": reply,
+                    "suggested_action": "Check Daily Plan"
+                }
+            else:
+                return {
+                    "reply": "You haven't added any subjects to your study planner yet! Go to your Dashboard's **Daily Plan** or **Weekly Planner** tabs to add subjects (e.g. Mathematics, Physics, Biology) and start tracking your syllabus.",
+                    "suggested_action": "Check Daily Plan"
+                }
+        else:
+            return {
+                "reply": "To see your active syllabus, make sure the database connection is running. Generally, your syllabus consists of all registered subjects (e.g. Mathematics, Physics, Chemistry) and their associated milestones.",
+                "suggested_action": "Check Daily Plan"
+            }
     
     # 1. Study Methods & Learning Techniques
     if "feynman" in m:
@@ -101,10 +139,10 @@ def generate_study_assistant_reply(msg: str, subj: str) -> dict:
     }
 
 @router.post("/", response_model=ChatResponse)
-def get_chat_response(request: ChatRequest):
+def get_chat_response(request: ChatRequest, db: Session = Depends(get_db)):
     if not request.message.strip():
         raise HTTPException(status_code=400, detail="Message cannot be empty")
-    res = generate_study_assistant_reply(request.message, request.subject)
+    res = generate_study_assistant_reply(request.message, request.subject, db=db)
     return ChatResponse(
         reply=res["reply"],
         suggested_action=res.get("suggested_action")

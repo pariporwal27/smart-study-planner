@@ -286,8 +286,8 @@ export default function ProgressTab({ addToast, triggerCelebration }: ProgressTa
               return (
                 <div key={g.id} style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: '8px', padding: '0.6rem 0.8rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 600, textDecoration: g.completed ? 'line-through' : 'none', color: g.completed ? 'var(--text-muted)' : 'var(--text-primary)' }}>
-                      🏆 {g.subject} Target: {g.targetHours}h
+                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: g.completed ? '#10b981' : 'var(--text-primary)' }}>
+                      🏆 {g.subject} Target: {g.targetHours}h {g.completed && <span style={{ fontSize: '0.72rem', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', padding: '0.1rem 0.4rem', borderRadius: '4px', marginLeft: '0.5rem', fontWeight: 700 }}>✅ Done</span>}
                     </span>
                     <div style={{ display: 'flex', gap: '0.35rem' }}>
                       <input type="checkbox" checked={g.completed} onChange={() => toggleGoalComplete(g.id)} style={{ cursor: 'pointer' }} />
