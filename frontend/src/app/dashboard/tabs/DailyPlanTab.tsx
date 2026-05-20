@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { generateSchedule } from '@/lib/api';
 
 interface Subject { name: string; difficulty: number; past_score: number; }
@@ -27,6 +27,66 @@ export default function DailyPlanTab({ triggerCelebration }: DailyPlanTabProps =
   const [metrics, setMetrics] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [hasLoaded, setHasLoaded] = useState(false);
+
+  // Load from LocalStorage on mount
+  useEffect(() => {
+    const savedSubjects = localStorage.getItem('study_subjects');
+    if (savedSubjects) {
+      try {
+        setSubjects(JSON.parse(savedSubjects));
+      } catch (e) {
+        console.error('Error loading subjects:', e);
+      }
+    }
+    
+    const savedDays = localStorage.getItem('study_days_left');
+    if (savedDays) {
+      setDaysLeft(Number(savedDays));
+    }
+    
+    const savedHours = localStorage.getItem('study_hours_per_day');
+    if (savedHours) {
+      setHoursPerDay(Number(savedHours));
+    }
+
+    const savedSchedule = localStorage.getItem('study_schedule');
+    if (savedSchedule) {
+      try {
+        const parsed = JSON.parse(savedSchedule);
+        setSchedule(parsed.schedule);
+        setModelUsed(parsed.model_used);
+      } catch (e) {
+        console.error('Error loading schedule:', e);
+      }
+    }
+    setHasLoaded(true);
+  }, []);
+
+  // Save changes to LocalStorage once loaded
+  useEffect(() => {
+    if (!hasLoaded) return;
+    localStorage.setItem('study_subjects', JSON.stringify(subjects));
+  }, [subjects, hasLoaded]);
+
+  useEffect(() => {
+    if (!hasLoaded) return;
+    localStorage.setItem('study_days_left', daysLeft.toString());
+  }, [daysLeft, hasLoaded]);
+
+  useEffect(() => {
+    if (!hasLoaded) return;
+    localStorage.setItem('study_hours_per_day', hoursPerDay.toString());
+  }, [hoursPerDay, hasLoaded]);
+
+  useEffect(() => {
+    if (!hasLoaded) return;
+    if (schedule) {
+      localStorage.setItem('study_schedule', JSON.stringify({ schedule, model_used: modelUsed }));
+    } else {
+      localStorage.removeItem('study_schedule');
+    }
+  }, [schedule, modelUsed, hasLoaded]);
 
   const addSubject = () => {
     const name = newName.trim();
