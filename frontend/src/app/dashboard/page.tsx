@@ -54,6 +54,41 @@ export default function Dashboard() {
     }
   }, []);
 
+  // Pre-unlock Audio Context on first user interaction to bypass browser autoplay blocks
+  useEffect(() => {
+    const unlock = () => {
+      try {
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioContextClass) {
+          const ctx = (window as any).globalAudioCtx || new AudioContextClass();
+          if (ctx.state === 'suspended') {
+            ctx.resume();
+          }
+          // Play silent buffer to prime hardware
+          const buffer = ctx.createBuffer(1, 1, 22050);
+          const source = ctx.createBufferSource();
+          source.buffer = buffer;
+          source.connect(ctx.destination);
+          source.start(0);
+          
+          (window as any).globalAudioCtx = ctx;
+        }
+      } catch (e) {
+        console.warn('Audio pre-unlock failed:', e);
+      }
+      // Remove listeners once primed
+      window.removeEventListener('click', unlock);
+      window.removeEventListener('touchstart', unlock);
+    };
+
+    window.addEventListener('click', unlock);
+    window.addEventListener('touchstart', unlock);
+    return () => {
+      window.removeEventListener('click', unlock);
+      window.removeEventListener('touchstart', unlock);
+    };
+  }, []);
+
   const toggleTheme = () => {
     const next = !isLight;
     setIsLight(next);
@@ -135,9 +170,17 @@ export default function Dashboard() {
 
   const playCelebrationSound = () => {
     try {
-      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioContext) return;
-      const ctx = new AudioContext();
+      let ctx = (window as any).globalAudioCtx;
+      if (!ctx) {
+        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+        if (!AudioContext) return;
+        ctx = new AudioContext();
+        (window as any).globalAudioCtx = ctx;
+      }
+      
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
 
       const playTone = (freq: number, start: number, duration: number, type: 'sine' | 'triangle' | 'sawtooth' | 'square' = 'sine') => {
         const osc = ctx.createOscillator();
@@ -169,7 +212,7 @@ export default function Dashboard() {
       playTone(880.00, now + 0.04, 0.12, 'sine');     // A5 pop
       playTone(1174.66, now + 0.14, 0.12, 'sine');    // D6 pop
     } catch (e) {
-      console.warn('Audio Context not supported:', e);
+      console.warn('Audio play failed:', e);
     }
   };
 
