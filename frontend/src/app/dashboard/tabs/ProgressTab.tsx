@@ -1,3 +1,4 @@
+// React effect reading user parameters from localStorage
 // Structure representing Leitner recall spaced review dates
 // Pydantic-like structure for study target milestones
 // Core type definitions for logged study sessions
