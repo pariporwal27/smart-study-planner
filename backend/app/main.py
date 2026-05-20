@@ -1,3 +1,4 @@
+# Register router controllers to active app instance
 # Enable all common HTTP verbs for local developer environments
 # FastAPI root entrypoint and base middleware
 from fastapi import FastAPI, Depends, HTTPException
