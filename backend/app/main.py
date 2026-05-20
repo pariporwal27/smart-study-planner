@@ -1,3 +1,4 @@
+# FastAPI root entrypoint and base middleware
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
