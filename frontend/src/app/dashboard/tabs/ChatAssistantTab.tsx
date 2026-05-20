@@ -115,11 +115,9 @@ export default function ChatAssistantTab() {
 
   return (
     <div className="card" style={{ 
-      display: 'grid', 
-      gridTemplateRows: '1fr auto', 
-      height: 'calc(100vh - 290px)', 
-      minHeight: '420px', 
-      maxHeight: '680px',
+      display: 'flex', 
+      flexDirection: 'column', 
+      maxHeight: '520px', 
       gap: '1rem', 
       padding: '1.5rem', 
       background: 'rgba(30, 30, 50, 0.65)', 
@@ -128,7 +126,7 @@ export default function ChatAssistantTab() {
     }}>
       
       {/* Messages Logs */}
-      <div className="no-scrollbar" style={{ overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      <div className="no-scrollbar" style={{ overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', flex: '1 1 auto' }}>
         {messages.map((m, i) => (
           <div key={i} style={{
             alignSelf: m.sender === 'user' ? 'flex-end' : 'flex-start',
