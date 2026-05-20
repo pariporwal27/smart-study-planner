@@ -1,3 +1,4 @@
+// Dynamic progress calculation mapping level indicators
 // Available pre-defined subjects for calendar selection
 // Productivity coefficients adjusting hours per weekday
 // Curated color palette mapping subjects to chart lines
