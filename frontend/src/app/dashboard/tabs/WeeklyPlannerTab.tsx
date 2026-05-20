@@ -1,3 +1,4 @@
+// Available pre-defined subjects for calendar selection
 // Productivity coefficients adjusting hours per weekday
 // Curated color palette mapping subjects to chart lines
 // Constants representing short day tags for grid labels
