@@ -4,8 +4,9 @@ import DailyPlanTab from './tabs/DailyPlanTab';
 import ProgressTab from './tabs/ProgressTab';
 import WeeklyPlannerTab from './tabs/WeeklyPlannerTab';
 import InsightsTab from './tabs/InsightsTab';
+import ZenModeTab from './tabs/ZenModeTab';
 
-const TABS = ['📅 Daily Plan', '📈 Progress', '🗓️ Weekly Planner', '🧠 Insights'];
+const TABS = ['📅 Daily Plan', '📈 Progress', '🗓️ Weekly Planner', '🧠 Insights', '🧘 Zen Mode'];
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState(0);
@@ -30,6 +31,7 @@ export default function Dashboard() {
         {activeTab === 1 && <ProgressTab />}
         {activeTab === 2 && <WeeklyPlannerTab />}
         {activeTab === 3 && <InsightsTab />}
+        {activeTab === 4 && <ZenModeTab />}
       </div>
     </div>
   );

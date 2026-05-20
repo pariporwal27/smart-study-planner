@@ -624,6 +624,31 @@ html, body {
 }
 
 /* ---- MUSIC PLAYER ---- */
+.music-toggle-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, var(--accent), var(--purple));
+  color: white;
+  border: none;
+  border-radius: 99px;
+  padding: 0.6rem 1.25rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  z-index: 1000;
+  box-shadow: 0 4px 20px var(--accent-glow);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+.music-toggle-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px var(--accent-glow);
+}
+
 .music-player {
   position: fixed;
   bottom: 0; left: 0; right: 0;
@@ -632,7 +657,14 @@ html, body {
   backdrop-filter: blur(20px);
   z-index: 999;
   padding: 0;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(0);
 }
+
+.music-player.music-hidden {
+  transform: translateY(100%);
+}
+
 
 .music-bar {
   display: flex;
