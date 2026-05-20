@@ -1,3 +1,4 @@
+# Welcome message default endpoint controller
 # Heartbeat health probe endpoint for production servers
 # Register router controllers to active app instance
 # Enable all common HTTP verbs for local developer environments
