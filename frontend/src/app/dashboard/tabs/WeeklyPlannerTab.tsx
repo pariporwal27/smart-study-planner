@@ -39,12 +39,14 @@ interface DailyQuest {
 
 interface WeeklyPlannerTabProps {
   addToast?: (msg: string, type?: 'success' | 'warning' | 'info') => void;
+  triggerCelebration?: () => void;
 }
 
-export default function WeeklyPlannerTab({ addToast }: WeeklyPlannerTabProps) {
+export default function WeeklyPlannerTab({ addToast, triggerCelebration }: WeeklyPlannerTabProps) {
   // --- XP & Gamification State ---
   const [xp, setXp] = useState(99);
   const [streakCount, setStreakCount] = useState(3);
+  const [lastBoostDate, setLastBoostDate] = useState<string | null>(null);
   const [dailyQuests, setDailyQuests] = useState<DailyQuest[]>([]);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
 
@@ -88,6 +90,9 @@ export default function WeeklyPlannerTab({ addToast }: WeeklyPlannerTabProps) {
     }
 
     // Gamification Loaders
+    const savedBoost = localStorage.getItem('study_last_xp_boost');
+    if (savedBoost) setLastBoostDate(savedBoost);
+
     const savedXp = localStorage.getItem('study_xp');
     if (savedXp) setXp(Number(savedXp));
 
@@ -142,6 +147,7 @@ export default function WeeklyPlannerTab({ addToast }: WeeklyPlannerTabProps) {
       if (q.id === questId && !q.claimed) {
         awardXp(q.xpReward);
         if (addToast) addToast(`Quest claimed! +${q.xpReward} XP awarded.`, 'success');
+        if (triggerCelebration) triggerCelebration();
         return { ...q, claimed: true, completed: true };
       }
       return q;
@@ -155,12 +161,26 @@ export default function WeeklyPlannerTab({ addToast }: WeeklyPlannerTabProps) {
       if (a.id === achId && a.unlocked && !a.claimed) {
         awardXp(a.xpReward);
         if (addToast) addToast(`Achievement unlocked! +${a.xpReward} XP awarded.`, 'success');
+        if (triggerCelebration) triggerCelebration();
         return { ...a, claimed: true };
       }
       return a;
     });
     setAchievements(updated);
     saveToStorage('study_achievements', updated);
+  };
+
+  const handleBoostXp = () => {
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (lastBoostDate === todayStr) {
+      if (addToast) addToast("You've already claimed your free daily boost! Come back tomorrow.", "warning");
+      return;
+    }
+    localStorage.setItem('study_last_xp_boost', todayStr);
+    setLastBoostDate(todayStr);
+    awardXp(25);
+    if (addToast) addToast("🚀 Daily XP Boost applied! +25 XP", "success");
+    if (triggerCelebration) triggerCelebration();
   };
 
   // --- Timetable Cell Editing Handlers ---
@@ -221,8 +241,19 @@ export default function WeeklyPlannerTab({ addToast }: WeeklyPlannerTabProps) {
 
           {/* XP Booster */}
           <div>
-            <button className="btn-primary" onClick={() => awardXp(25)} style={{ padding: '0.6rem 1.25rem' }}>
-              ⚡ Boost XP (+25 XP)
+            <button 
+              className="btn-primary" 
+              onClick={handleBoostXp} 
+              disabled={lastBoostDate === new Date().toISOString().split('T')[0]}
+              style={{ 
+                padding: '0.6rem 1.25rem',
+                background: lastBoostDate === new Date().toISOString().split('T')[0] ? 'rgba(255,255,255,0.05)' : 'linear-gradient(135deg, var(--accent), var(--purple))',
+                border: lastBoostDate === new Date().toISOString().split('T')[0] ? '1px solid var(--border)' : 'none',
+                color: lastBoostDate === new Date().toISOString().split('T')[0] ? 'var(--text-muted)' : 'white',
+                cursor: lastBoostDate === new Date().toISOString().split('T')[0] ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {lastBoostDate === new Date().toISOString().split('T')[0] ? 'Boost Claimed Today ⏳' : '⚡ Boost XP (+25 XP)'}
             </button>
           </div>
 

@@ -31,9 +31,10 @@ const SUBJECTS = ['Math', 'Physics', 'English'];
 
 interface ProgressTabProps {
   addToast?: (msg: string, type?: 'success' | 'warning' | 'info') => void;
+  triggerCelebration?: () => void;
 }
 
-export default function ProgressTab({ addToast }: ProgressTabProps) {
+export default function ProgressTab({ addToast, triggerCelebration }: ProgressTabProps) {
   const [entries, setEntries] = useState<ProgressEntry[]>([]);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [actualHours, setActualHours] = useState<Record<string, number>>({});
@@ -116,8 +117,10 @@ export default function ProgressTab({ addToast }: ProgressTabProps) {
     localStorage.setItem('study_progress', JSON.stringify(updated));
 
     if (addToast) addToast("Progress saved successfully!", "success");
+    if (triggerCelebration) triggerCelebration();
 
     // Auto-update goals progress!
+    let anyGoalCompleted = false;
     const updatedGoals = goals.map(g => {
       const totalStudied = updated
         .filter(e => e.subject === g.subject)
@@ -125,12 +128,14 @@ export default function ProgressTab({ addToast }: ProgressTabProps) {
       
       if (totalStudied >= g.targetHours && !g.completed) {
         if (addToast) addToast(`🎯 Goal completed for ${g.subject}!`, "success");
+        anyGoalCompleted = true;
         return { ...g, completed: true };
       }
       return g;
     });
     setGoals(updatedGoals);
     localStorage.setItem('study_goals', JSON.stringify(updatedGoals));
+    if (anyGoalCompleted && triggerCelebration) triggerCelebration();
   };
 
   const resetProgress = () => {
@@ -162,10 +167,19 @@ export default function ProgressTab({ addToast }: ProgressTabProps) {
   };
 
   const toggleGoalComplete = (id: number) => {
-    const updated = goals.map(g => g.id === id ? { ...g, completed: !g.completed } : g);
+    let triggered = false;
+    const updated = goals.map(g => {
+      if (g.id === id) {
+        const nextCompleted = !g.completed;
+        if (nextCompleted) triggered = true;
+        return { ...g, completed: nextCompleted };
+      }
+      return g;
+    });
     setGoals(updated);
     localStorage.setItem('study_goals', JSON.stringify(updated));
     if (addToast) addToast("Goal status updated!", "success");
+    if (triggered && triggerCelebration) triggerCelebration();
   };
 
   // Calculations

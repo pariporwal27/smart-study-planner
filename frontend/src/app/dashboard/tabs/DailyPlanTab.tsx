@@ -13,7 +13,11 @@ const DEFAULT_SUBJECTS: Subject[] = [
 
 const PRIORITY_COLOR: Record<string, string> = { High: '#ef4444', Medium: '#f59e0b', Low: '#10b981' };
 
-export default function DailyPlanTab() {
+interface DailyPlanTabProps {
+  triggerCelebration?: () => void;
+}
+
+export default function DailyPlanTab({ triggerCelebration }: DailyPlanTabProps = {}) {
   const [subjects, setSubjects] = useState<Subject[]>(DEFAULT_SUBJECTS);
   const [newName, setNewName] = useState('');
   const [daysLeft, setDaysLeft] = useState(21);
@@ -42,6 +46,7 @@ export default function DailyPlanTab() {
       const data = await generateSchedule(subjects, daysLeft, hoursPerDay);
       setSchedule(data.schedule);
       setModelUsed(data.model_used);
+      if (triggerCelebration) triggerCelebration();
     } catch { setError('Could not reach the AI backend. Make sure FastAPI is running on port 8000.'); }
     setLoading(false);
   };

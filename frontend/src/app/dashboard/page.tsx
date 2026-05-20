@@ -23,10 +23,20 @@ interface Toast {
   type: 'info' | 'success' | 'warning';
 }
 
+interface Balloon {
+  id: number;
+  left: number;
+  color: string;
+  delay: number;
+}
+
+const BALLOON_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'];
+
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState(0);
   const [isLight, setIsLight] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [balloons, setBalloons] = useState<Balloon[]>([]);
 
   useEffect(() => {
     const saved = localStorage.getItem('theme-light');
@@ -58,8 +68,68 @@ export default function Dashboard() {
     }, 4000);
   };
 
+  const triggerCelebration = () => {
+    const list: Balloon[] = [];
+    const baseId = Date.now();
+    for (let i = 0; i < 20; i++) {
+      list.push({
+        id: baseId + i,
+        left: Math.random() * 100,
+        color: BALLOON_COLORS[Math.floor(Math.random() * BALLOON_COLORS.length)],
+        delay: Math.random() * 1.5
+      });
+    }
+    setBalloons(list);
+    // Cleanup balloons after they finish floating
+    setTimeout(() => {
+      setBalloons([]);
+    }, 6000);
+  };
+
   return (
     <div>
+      {/* 🎈 Celebratory Floating Balloons */}
+      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 99999, overflow: 'hidden' }}>
+        {balloons.map(b => (
+          <div 
+            key={b.id} 
+            style={{
+              position: 'absolute',
+              bottom: '-120px',
+              left: `${b.left}%`,
+              width: '60px',
+              height: '75px',
+              background: b.color,
+              borderRadius: '50% 50% 50% 50% / 40% 40% 60% 60%',
+              boxShadow: 'inset -8px -8px 0 rgba(0,0,0,0.15), 0 10px 20px rgba(0,0,0,0.1)',
+              animation: `floatUp 4.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards`,
+              animationDelay: `${b.delay}s`
+            }}
+          >
+            {/* Balloon String */}
+            <div style={{
+              position: 'absolute',
+              bottom: '-25px',
+              left: '50%',
+              width: '2px',
+              height: '25px',
+              background: 'rgba(255,255,255,0.4)',
+              transform: 'translateX(-50%)'
+            }} />
+            {/* Balloon Knot */}
+            <div style={{
+              position: 'absolute',
+              bottom: '-4px',
+              left: '50%',
+              borderLeft: '5px solid transparent',
+              borderRight: '5px solid transparent',
+              borderBottom: `6px solid ${b.color}`,
+              transform: 'translateX(-50%)'
+            }} />
+          </div>
+        ))}
+      </div>
+
       {/* 🔔 Floating Notification Toast Area */}
       <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 10000, display: 'flex', flexDirection: 'column', gap: '0.75rem', pointerEvents: 'none' }}>
         {toasts.map(t => (
@@ -98,7 +168,9 @@ export default function Dashboard() {
             background: 'var(--bg-secondary)',
             border: '1px solid var(--border)',
             color: 'var(--text-primary)',
-            padding: '0.6rem 1.2rem',
+            padding: '0.6rem 1.2,0',
+            paddingLeft: '1.2rem',
+            paddingRight: '1.2rem',
             borderRadius: '10px',
             cursor: 'pointer',
             fontSize: '0.85rem',
@@ -125,15 +197,21 @@ export default function Dashboard() {
       </div>
 
       <div style={{ marginTop: '1.5rem' }}>
-        {activeTab === 0 && <DailyPlanTab />}
-        {activeTab === 1 && <ProgressTab addToast={addToast} />}
-        {activeTab === 2 && <WeeklyPlannerTab addToast={addToast} />}
+        {activeTab === 0 && <DailyPlanTab triggerCelebration={triggerCelebration} />}
+        {activeTab === 1 && <ProgressTab addToast={addToast} triggerCelebration={triggerCelebration} />}
+        {activeTab === 2 && <WeeklyPlannerTab addToast={addToast} triggerCelebration={triggerCelebration} />}
         {activeTab === 3 && <InsightsTab />}
         {activeTab === 4 && <ZenModeTab />}
         {activeTab === 5 && <ChatAssistantTab />}
       </div>
 
       <style jsx global>{`
+        @keyframes floatUp {
+          0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+          10% { opacity: 0.9; }
+          90% { opacity: 0.9; }
+          100% { transform: translateY(-120vh) rotate(20deg); opacity: 0; }
+        }
         @keyframes slideIn {
           from { transform: translateX(120%); opacity: 0; }
           to { transform: translateX(0); opacity: 1; }

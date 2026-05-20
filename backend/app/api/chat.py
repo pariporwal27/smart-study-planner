@@ -1,8 +1,3 @@
-# Core heuristics rules matching messages to subjects
-# Curated study recommendations and active recall helper tips
-# Pydantic response structures for chatbot interface
-# Pydantic request structures for chatbot interface
-# AI Chat Assistant configuration route
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 import random
@@ -25,44 +20,84 @@ STUDY_TIPS = [
 ]
 
 def generate_study_assistant_reply(msg: str, subj: str) -> dict:
-    m = msg.lower()
-    subj = subj.lower()
+    m = msg.lower().strip()
     
-    if "help" in m or "how to" in m:
+    # 1. Study Methods & Learning Techniques
+    if "feynman" in m:
         return {
-            "reply": "I can help you construct flashcards, explain concepts simply, schedule dynamic study blocks, or suggest active recall questions. What subject are you working on right now?",
-            "suggested_action": "Explain a topic to me"
+            "reply": "The Feynman Technique is a mental model for rapid learning:\n1. Choose a concept you want to understand.\n2. Explain it in simple terms as if teaching it to a 10-year-old child.\n3. Identify gaps in your explanation, then return to the source material to fill them.\n4. Simplify your analogy and language further until it flows naturally.",
+            "suggested_action": "Try explaining Physics"
         }
-    
-    if "revision" in m or "revise" in m:
+    if "recall" in m or "active recall" in m:
         return {
-            "reply": "For effective revision, try Spaced Repetition! Review your topic today, then in 3 days, then 7 days. I've automatically added this to your Revision Planner tab!",
-            "suggested_action": "Check Revision Planner"
+            "reply": "Active Recall is the single most effective study method! Instead of passively re-reading notes or highlighting:\n- Close the book and write down everything you remember.\n- Create high-quality flashcards with direct question-and-answer pairs.\n- Test yourself frequently before reviewing the answers.",
+            "suggested_action": "Start Active Recall Test"
         }
-        
+    if "pomodoro" in m or "focus" in m:
+        return {
+            "reply": "The Pomodoro Technique is excellent for focus:\n1. Choose a high-priority task.\n2. Set a timer for 25 minutes (Zen focus session).\n3. Work single-mindedly until the timer rings.\n4. Take a mandatory 5-minute offline break.\n5. Repeat 4 times, then take a longer 20-minute break.",
+            "suggested_action": "Open Zen Timer"
+        }
+    if "spaced" in m or "repetition" in m or "leitner" in m:
+        return {
+            "reply": "Spaced Repetition exploits the psychological forgetting curve! By spacing reviews at intervals (e.g., Day 1, Day 3, Day 7, Day 14), you trigger active recall just as the memory begins to fade, moving facts from short-term into permanent long-term memory.",
+            "suggested_action": "Open Revision Planner"
+        }
+
+    # 2. Subject-Specific Detailed Explanations
+    if "math" in m or "calculus" in m or "algebra" in m:
+        return {
+            "reply": "Mathematics is about structural patterns. Here is my active formula to master Math:\n- **Conceptualize**: Understand *why* a formula works instead of memorizing it.\n- **Derive**: Try writing out the steps to prove a formula.\n- **Spaced Practice**: Solve 3-5 high-difficulty questions daily rather than cramming before test dates.",
+            "suggested_action": "Solve Math problems"
+        }
+    if "physics" in m or "mechanics" in m:
+        return {
+            "reply": "Physics connects mathematical equations to real-world observables! \n- **Always draw force diagrams**: High-priority for mechanics and kinetics problems.\n- **Define your variables**: List mass (m), velocity (v), acceleration (a), and forces (F) clearly before plugging into formulas.",
+            "suggested_action": "Review Physics notes"
+        }
+    if "chemistry" in m or "organic" in m:
+        return {
+            "reply": "Chemistry bridges molecular physics and macroscopic biology!\n- **Organic Chemistry**: Focus on understanding electron density flows and curved-arrow reaction mechanisms rather than sheer memorization.\n- **Periodic trends**: Memorize electronegativity, atomic radius, and ionization energy trends to predict properties instantly.",
+            "suggested_action": "Review periodic trends"
+        }
+    if "biology" in m or "photosynthesis" in m or "genetics" in m:
+        return {
+            "reply": "Biology relies heavily on complex cellular pathways and classification systems.\n- **Draw diagrams**: Label cell organelles, DNA replication forks, or Krebs cycle stages from scratch.\n- **Feynman explanation**: Describe photosynthesis as if explaining how a plant makes its own kitchen recipes to a child.",
+            "suggested_action": "Draw cellular diagrams"
+        }
+    if "history" in m or "world war" in m:
+        return {
+            "reply": "History is a series of interconnected cause-and-effect networks, not just a list of dry dates!\n- **Chronological timelines**: Map core social, economic, and political drivers leading to key turning points.\n- **Theme mapping**: Match historic figures to their underlying ideological values.",
+            "suggested_action": "Build History timeline"
+        }
+
+    # 3. Motivation, Schedule, Exam Pressure, and Burnout
     if "burnout" in m or "tired" in m or "exhausted" in m:
         return {
-            "reply": "It sounds like you might be studying at a very high intensity. I suggest using Zen Mode to set a shorter 25-minute Pomodoro timer followed by a mandatory 5-minute screen-free break.",
-            "suggested_action": "Start Zen Session"
+            "reply": "Exhaustion is a sign that your study sessions lack adequate restorative breaks. \n- **Immediate action**: Shut down your laptop, step away from screens, and take a 10-minute walk or practice mindfulness.\n- **Long-term**: Reduce your daily study hour targets to a sustainable level in your Daily Plan dashboard.",
+            "suggested_action": "Lower daily hours"
         }
-        
-    # Subject-specific replies
-    if "math" in subj or "math" in m:
+    if "motivation" in m or "lazy" in m or "start" in m:
         return {
-            "reply": "Math requires active problem-solving! Try working through active derivation exercises rather than just reading explanations. Would you like me to suggest a sample practice plan?",
-            "suggested_action": "Generate Math Plan"
+            "reply": "Action precedes motivation, not the other way around! Don't wait to 'feel like studying.' Instead:\n- Use the **5-Minute Rule**: Tell yourself you will study for exactly 5 minutes. If you want to stop then, you can. (90% of the time, you will keep going!).\n- Start a short 25-minute Pomodoro timer inside our Zen Mode tab.",
+            "suggested_action": "Start 25m focus"
         }
-    if "physics" in subj or "physics" in m:
+    if "anxiety" in m or "exam" in m or "stress" in m:
         return {
-            "reply": "Physics is all about conceptual understanding. Make sure you map standard force diagrams before calculating equations. Let me know if you want a step-by-step breakdown.",
-            "suggested_action": "Break down a formula"
+            "reply": "Exam anxiety is extremely common but highly manageable:\n- **Practice under mock exam conditions**: Set a timer and solve practice questions without your notes.\n- **Focus on effort, not outcomes**: You cannot control the exact test grade, but you *can* control how many high-focus study sessions you log today.",
+            "suggested_action": "Start practice test"
         }
-        
-    # General fallback
+    if "schedule" in m or "plan" in m or "allocate" in m:
+        return {
+            "reply": "Your AI Schedule is automatically calculated in the **Daily Plan** tab using ML regressions! It analyzes your past performance and study levels to balance daily hour targets so you never burn out.",
+            "suggested_action": "Check Daily Plan"
+        }
+
+    # General fallback response with rich tips
     tip = random.choice(STUDY_TIPS)
     return {
-        "reply": f"That's a great question. Remember: {tip} Tell me more about what specific concept or homework problem you are tackling right now so I can break it down step-by-step!",
-        "suggested_action": "Solve practice problem"
+        "reply": f"I'm here to support your study goals! Remember: {tip}\n\nAsk me how to use the 'Feynman Technique', tips on 'Active Recall', advice on 'burnout', or ask about specific subjects like 'Math' or 'Physics' to get customized study frameworks!",
+        "suggested_action": "Learn study methods"
     }
 
 @router.post("/", response_model=ChatResponse)
