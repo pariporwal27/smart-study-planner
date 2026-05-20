@@ -60,6 +60,47 @@ def generate_study_assistant_reply(msg: str, subj: str, db: Session = None) -> d
                 "suggested_action": "Check Daily Plan"
             }
     
+    # 0.5 Dynamic Database Subject-Specific Match
+    if db:
+        try:
+            subjects = db.query(Subject).filter(Subject.user_id == 1).all()
+            for s in subjects:
+                if s.name.lower() in m:
+                    # Found the subject in user's timetable/subjects! Let's generate tailored advice
+                    reply = f"🤖 **Study Assistant Insights for '{s.name}':**\n\n"
+                    reply += f"I see **{s.name}** is on your study plan with a difficulty rating of **{s.difficulty_level}/5** and a target of **{s.target_weekly_hours} hours per week**.\n\n"
+                    
+                    s_lower = s.name.lower()
+                    if "machine learning" in s_lower or "ml" in s_lower or "data science" in s_lower or "artificial intelligence" in s_lower or "ai" in s_lower:
+                        reply += "💡 **ML Study Strategy:**\n" \
+                                 "- **Understand the Math First**: Don't treat algorithms (like gradient descent or SVMs) as black boxes. Make sure to review the underlying linear algebra and calculus.\n" \
+                                 "- **Hands-On Projects**: Implement algorithms from scratch or build a small end-to-end model on a dataset from Kaggle to solidify your theory.\n" \
+                                 "- **Active Recall**: Test your understanding of model bias/variance, overfitting prevention (regularization), and evaluation metrics (precision, recall, F1-score)."
+                    elif "computer science" in s_lower or "coding" in s_lower or "programming" in s_lower or "software" in s_lower or "web dev" in s_lower or "python" in s_lower or "javascript" in s_lower:
+                        reply += "💻 **Programming / CS Strategy:**\n" \
+                                 "- **Active Coding**: Write code daily! Reading a tutorial is passive; writing code, debugging errors, and refactoring builds real skill.\n" \
+                                 "- **Deconstruct Algorithms**: Draw control flow charts and manually trace loops and variables for complex logic.\n" \
+                                 "- **Zen Focus**: Minimize distractions during coding sessions. Setup a Pomodoro session for deep code reviews."
+                    else:
+                        reply += f"📚 **Active Recall Plan for {s.name}:**\n" \
+                                 f"- **Feynman Explanation**: Try teaching the main concept of {s.name} you studied today to someone else in under 2 minutes.\n" \
+                                 f"- **Q&A Flashcards**: Create 3 direct question-and-answer pairs for the most complex topic in this course.\n" \
+                                 f"- **Spaced Reviews**: Review this subject every 3 days to flatten the forgetting curve."
+                    
+                    # Check for incomplete tasks
+                    tasks = db.query(Task).filter(Task.subject_id == s.id, Task.completed == False).all()
+                    if tasks:
+                        reply += f"\n\n📝 **Your Next Tasks for {s.name}:**\n"
+                        for t in tasks[:3]:
+                            reply += f"- {t.title}\n"
+                    
+                    return {
+                        "reply": reply,
+                        "suggested_action": "Check Daily Plan"
+                    }
+        except Exception:
+            pass
+
     # 1. Study Methods & Learning Techniques
     if "feynman" in m:
         return {
@@ -107,6 +148,18 @@ def generate_study_assistant_reply(msg: str, subj: str, db: Session = None) -> d
         return {
             "reply": "History is a series of interconnected cause-and-effect networks, not just a list of dry dates!\n- **Chronological timelines**: Map core social, economic, and political drivers leading to key turning points.\n- **Theme mapping**: Match historic figures to their underlying ideological values.",
             "suggested_action": "Build History timeline"
+        }
+
+    # 2.6 Computer Science & Machine Learning Static Checks
+    if "machine learning" in m or "ml" in m or "data science" in m or "artificial intelligence" in m or "ai" in m:
+        return {
+            "reply": "Machine Learning and AI connect mathematical theory with algorithmic execution!\n- **Linear Algebra & Calculus**: Grasp core concepts of gradient descent, matrix multiplication, and partial derivatives rather than treating libraries (scikit-learn, PyTorch) as black boxes.\n- **Hands-On Prototyping**: Build end-to-end projects. Fetch a dataset, perform EDA (Exploratory Data Analysis), clean features, train models, and tune hyperparameters.\n- **Conceptual Flashcards**: Write down differences between bias/variance, L1/L2 regularization, and evaluation metrics (ROC-AUC, F1-score) to test yourself using active recall.",
+            "suggested_action": "Explain Gradient Descent"
+        }
+    if "computer science" in m or "coding" in m or "programming" in m or "software" in m or "javascript" in m or "python" in m or "development" in m:
+        return {
+            "reply": "Computer Science and Coding are highly active disciplines!\n- **Write Code Daily**: Passive reading does not build muscle memory. Write clean code, face debugging errors, and solve challenges on LeetCode or personal projects.\n- **Trace Logic Manually**: When learning an algorithm or data structure (e.g., binary search, recursion), trace the variables line-by-line on paper first.\n- **Spaced Practice**: Spend 30 minutes solving coding problems everyday rather than an 8-hour marathon once a week.",
+            "suggested_action": "Start coding practice"
         }
 
     # 3. Motivation, Schedule, Exam Pressure, and Burnout
