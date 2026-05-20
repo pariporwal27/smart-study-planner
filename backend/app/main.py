@@ -1,3 +1,4 @@
+# Heartbeat health probe endpoint for production servers
 # Register router controllers to active app instance
 # Enable all common HTTP verbs for local developer environments
 # FastAPI root entrypoint and base middleware
