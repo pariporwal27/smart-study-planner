@@ -1,12 +1,34 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 import random
+import os
+import json
+import urllib.request
+import urllib.error
 from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.models.subject import Subject
 from app.models.task import Task
 
 router = APIRouter()
+
+# Premium manual .env loader for maximum robustness
+def load_dotenv():
+    try:
+        paths = ["backend/.env", ".env", "../.env", "app/.env"]
+        for p in paths:
+            if os.path.exists(p):
+                with open(p, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and not line.startswith("#") and "=" in line:
+                            k, v = line.split("=", 1)
+                            os.environ[k.strip()] = v.strip().strip('"').strip("'")
+                break
+    except Exception:
+        pass
+
+load_dotenv()
 
 class ChatRequest(BaseModel):
     message: str
@@ -23,7 +45,52 @@ STUDY_TIPS = [
   "For physics problems, always list your known variables first before picking an equation."
 ]
 
-def generate_study_assistant_reply(msg: str, subj: str, db: Session = None) -> dict:
+def call_gemini_api(prompt: str, api_key: str) -> str:
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+    headers = {"Content-Type": "application/json"}
+    
+    payload = {
+        "contents": [
+            {
+                "parts": [
+                    {"text": prompt}
+                ]
+            }
+        ],
+        "generationConfig": {
+            "temperature": 0.7,
+            "maxOutputTokens": 1200
+        }
+    }
+    
+    try:
+        req = urllib.request.Request(
+            url, 
+            data=json.dumps(payload).encode("utf-8"), 
+            headers=headers, 
+            method="POST"
+        )
+        with urllib.request.urlopen(req, timeout=15) as response:
+            res_data = json.loads(response.read().decode("utf-8"))
+            candidates = res_data.get("candidates", [])
+            if candidates:
+                content = candidates[0].get("content", {})
+                parts = content.get("parts", [])
+                if parts:
+                    return parts[0].get("text", "")
+            return "I received an empty response from my Gemini AI engine. Please try asking again."
+    except urllib.error.HTTPError as e:
+        try:
+            error_body = e.read().decode("utf-8")
+            error_json = json.loads(error_body)
+            error_msg = error_json.get("error", {}).get("message", str(e))
+            return f"Gemini API Error: {error_msg}"
+        except Exception:
+            return f"Gemini API HTTP Error {e.code}: {e.reason}"
+    except Exception as e:
+        return f"Failed to connect to Gemini API: {str(e)}"
+
+def generate_study_assistant_fallback(msg: str, subj: str, db: Session = None) -> dict:
     m = msg.lower().strip()
 
     # 0. Syllabus / Subjects database-aware check
@@ -189,6 +256,63 @@ def generate_study_assistant_reply(msg: str, subj: str, db: Session = None) -> d
     return {
         "reply": f"I'm here to support your study goals! Remember: {tip}\n\nAsk me how to use the 'Feynman Technique', tips on 'Active Recall', advice on 'burnout', or ask about specific subjects like 'Math' or 'Physics' to get customized study frameworks!",
         "suggested_action": "Learn study methods"
+    }
+
+def generate_study_assistant_reply(msg: str, subj: str, db: Session = None) -> dict:
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        fallback_res = generate_study_assistant_fallback(msg, subj, db)
+        return {
+            "reply": (
+                "⚠️ **General AI Knowledge is currently in Demo mode.**\n\n"
+                "To unlock the superpowered AI Assistant capable of answering **any academic question of any difficulty** from any subject, "
+                "simply add your free `GEMINI_API_KEY` to the `backend/.env` file!\n\n"
+                "👉 **How to get your free key:**\n"
+                "1. Go to [Google AI Studio](https://aistudio.google.com/)\n"
+                "2. Click **Create API Key** and copy it.\n"
+                "3. Create a file named `.env` in the `backend/` directory and add: `GEMINI_API_KEY=your_key_here`\n\n"
+                "--- \n\n"
+                f"🤖 **Local Study Assistant reply:**\n\n{fallback_res['reply']}"
+            ),
+            "suggested_action": fallback_res.get("suggested_action")
+        }
+
+    # Query active syllabus context to feed to Gemini
+    subject_context = ""
+    if db:
+        try:
+            subjects = db.query(Subject).filter(Subject.user_id == 1).all()
+            for s in subjects:
+                if s.name.lower() in msg.lower():
+                    subject_context = f"Subject: {s.name} (Difficulty Level: {s.difficulty_level}/5, Weekly Target: {s.target_weekly_hours} hours)"
+                    break
+        except Exception:
+            pass
+
+    system_prompt = (
+        "You are Pari's Elite AI Study Assistant inside the Smart Study Planner application. "
+        "Your mission is to provide deep, rigorous, and extremely detailed explanations to any question, regardless of subject or difficulty level. "
+        "Whether Pari asks about advanced mathematics, quantum physics, organic chemistry, machine learning, data structures, history, or literature, "
+        "always answer with expert-level academic knowledge.\n\n"
+        "Please follow these guidelines in your responses:\n"
+        "1. Start your response with a friendly, high-energy academic opening.\n"
+        "2. Format your response beautifully using clean Markdown: use **bold** to emphasize important technical terms, bullet points for lists, "
+        "and clear headers where appropriate.\n"
+        "3. Provide step-by-step reasoning or derivations for mathematical, scientific, or technical questions.\n"
+        "4. Integrate pedagogical concepts (e.g., active recall questions, Feynman analogies, or spaced study tips) to help Pari master the topic.\n"
+        "5. Keep the tone highly motivational, professional, and intellectually stimulating.\n"
+    )
+
+    if subject_context:
+        system_prompt += f"\nNote: Pari is currently studying the subject '{subject_context}'. Relate your explanation to this context if helpful.\n"
+
+    full_prompt = f"{system_prompt}\n\nPari's Question: {msg}\n\nDetailed Explanation:"
+    
+    reply = call_gemini_api(full_prompt, api_key)
+    
+    return {
+        "reply": reply,
+        "suggested_action": None
     }
 
 @router.post("/", response_model=ChatResponse)
