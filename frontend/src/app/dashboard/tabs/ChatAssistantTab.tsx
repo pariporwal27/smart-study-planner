@@ -114,7 +114,18 @@ export default function ChatAssistantTab() {
   };
 
   return (
-    <div className="card" style={{ display: 'grid', gridTemplateRows: '1fr auto', height: '600px', gap: '1rem', padding: '1.5rem', background: 'rgba(30, 30, 50, 0.65)', border: '1px solid var(--border)', backdropFilter: 'blur(20px)' }}>
+    <div className="card" style={{ 
+      display: 'grid', 
+      gridTemplateRows: '1fr auto', 
+      height: 'calc(100vh - 290px)', 
+      minHeight: '420px', 
+      maxHeight: '680px',
+      gap: '1rem', 
+      padding: '1.5rem', 
+      background: 'rgba(30, 30, 50, 0.65)', 
+      border: '1px solid var(--border)', 
+      backdropFilter: 'blur(20px)' 
+    }}>
       
       {/* Messages Logs */}
       <div className="no-scrollbar" style={{ overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
