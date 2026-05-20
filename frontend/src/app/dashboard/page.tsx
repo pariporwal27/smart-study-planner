@@ -133,24 +133,66 @@ export default function Dashboard() {
     }, 4000);
   };
 
+  const playCelebrationSound = () => {
+    try {
+      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContext) return;
+      const ctx = new AudioContext();
+
+      const playTone = (freq: number, start: number, duration: number, type: 'sine' | 'triangle' | 'sawtooth' | 'square' = 'sine') => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, start);
+        
+        gain.gain.setValueAtTime(0, start);
+        gain.gain.linearRampToValueAtTime(0.2, start + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        
+        osc.start(start);
+        osc.stop(start + duration);
+      };
+
+      const now = ctx.currentTime;
+      
+      // Joyful chord synthesis! C5 -> E5 -> G5 -> C6 level-up chime!
+      playTone(523.25, now, 0.35, 'triangle');       // C5
+      playTone(659.25, now + 0.06, 0.35, 'triangle');  // E5
+      playTone(783.99, now + 0.12, 0.35, 'triangle');  // G5
+      playTone(1046.50, now + 0.18, 0.45, 'sine');    // C6
+      
+      // Bubble pops matching the balloons
+      playTone(880.00, now + 0.04, 0.12, 'sine');     // A5 pop
+      playTone(1174.66, now + 0.14, 0.12, 'sine');    // D6 pop
+    } catch (e) {
+      console.warn('Audio Context not supported:', e);
+    }
+  };
+
   const triggerCelebration = () => {
     const list: Balloon[] = [];
     const baseId = Date.now();
-    for (let i = 0; i < 48; i++) {
+    for (let i = 0; i < 54; i++) {
       list.push({
         id: baseId + i,
         left: Math.random() * 100,
         color: BALLOON_COLORS[Math.floor(Math.random() * BALLOON_COLORS.length)],
-        delay: Math.random() * 1.2,
-        duration: 2.2 + Math.random() * 1.8,
-        size: 40 + Math.random() * 20
+        delay: Math.random() * 0.7,
+        duration: 1.1 + Math.random() * 1.1,
+        size: 38 + Math.random() * 22
       });
     }
     setBalloons(list);
+    playCelebrationSound();
+    
     // Cleanup balloons after they finish floating
     setTimeout(() => {
       setBalloons([]);
-    }, 6000);
+    }, 4000);
   };
 
   return (
