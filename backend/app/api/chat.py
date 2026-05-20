@@ -1,3 +1,4 @@
+# Pydantic request structures for chatbot interface
 # AI Chat Assistant configuration route
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
