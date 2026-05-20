@@ -1,3 +1,4 @@
+# AI Chat Assistant configuration route
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 import random
