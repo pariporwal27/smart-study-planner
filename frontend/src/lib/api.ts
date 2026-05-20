@@ -1,3 +1,8 @@
+// Modify task status between pending and complete
+// Fetch task sub-elements associated with specific subject id
+// Post inputs to ML model allocating appropriate hours
+// Get all active user subjects from database storage
+// Standard Axios client configured for local backend address
 import axios from 'axios';
 
 const API_URL = 'http://127.0.0.1:8000/api/v1';

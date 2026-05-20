@@ -1,3 +1,4 @@
+// Dynamic Pomodoro timer values defined in seconds
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
