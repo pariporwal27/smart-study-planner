@@ -1,3 +1,4 @@
+# Pydantic response structures for chatbot interface
 # Pydantic request structures for chatbot interface
 # AI Chat Assistant configuration route
 from fastapi import APIRouter, HTTPException
