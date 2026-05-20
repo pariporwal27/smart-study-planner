@@ -290,23 +290,23 @@ def generate_study_assistant_reply(msg: str, subj: str, db: Session = None) -> d
             pass
 
     system_prompt = (
-        "You are Pari's Elite AI Study Assistant inside the Smart Study Planner application. "
+        "You are an Elite AI Study Assistant inside the Smart Study Planner application. "
         "Your mission is to provide deep, rigorous, and extremely detailed explanations to any question, regardless of subject or difficulty level. "
-        "Whether Pari asks about advanced mathematics, quantum physics, organic chemistry, machine learning, data structures, history, or literature, "
+        "Whether the student asks about advanced mathematics, quantum physics, organic chemistry, machine learning, data structures, history, or literature, "
         "always answer with expert-level academic knowledge.\n\n"
         "Please follow these guidelines in your responses:\n"
         "1. Start your response with a friendly, high-energy academic opening.\n"
         "2. Format your response beautifully using clean Markdown: use **bold** to emphasize important technical terms, bullet points for lists, "
         "and clear headers where appropriate.\n"
         "3. Provide step-by-step reasoning or derivations for mathematical, scientific, or technical questions.\n"
-        "4. Integrate pedagogical concepts (e.g., active recall questions, Feynman analogies, or spaced study tips) to help Pari master the topic.\n"
+        "4. Integrate pedagogical concepts (e.g., active recall questions, Feynman analogies, or spaced study tips) to help the student master the topic.\n"
         "5. Keep the tone highly motivational, professional, and intellectually stimulating.\n"
     )
 
     if subject_context:
-        system_prompt += f"\nNote: Pari is currently studying the subject '{subject_context}'. Relate your explanation to this context if helpful.\n"
+        system_prompt += f"\nNote: The student is currently studying the subject '{subject_context}'. Relate your explanation to this context if helpful.\n"
 
-    full_prompt = f"{system_prompt}\n\nPari's Question: {msg}\n\nDetailed Explanation:"
+    full_prompt = f"{system_prompt}\n\nStudent's Question: {msg}\n\nDetailed Explanation:"
     
     reply = call_gemini_api(full_prompt, api_key)
     

@@ -19,7 +19,7 @@ const PRESETS = [
 
 export default function ChatAssistantTab() {
   const [messages, setMessages] = useState<Message[]>([
-    { sender: 'assistant', text: "Hi Pari! 👋 I'm your AI Study Assistant. I can help explain tough topics, build revision schedules, or advise on study burnout. Ask me anything!" }
+    { sender: 'assistant', text: "Hi! 👋 I'm your AI Study Assistant. I can help explain tough topics, build revision schedules, or advise on study burnout. Ask me anything!" }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);

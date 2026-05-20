@@ -5,7 +5,7 @@
 // Standard Axios client configured for local backend address
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api/v1';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://smart-study-planner-e22b.onrender.com/api/v1';
 
 const apiClient = axios.create({
   baseURL: API_URL,
