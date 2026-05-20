@@ -1,3 +1,4 @@
+// Convert custom minutes inputs into focus seconds
 // Transition preset indexes resetting active countdowns
 // Active side-effect managing countdown interval callbacks
 // Dynamic Pomodoro timer values defined in seconds
