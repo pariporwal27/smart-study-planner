@@ -1,3 +1,4 @@
+// Revert countdown timer to selected base values
 // Convert custom minutes inputs into focus seconds
 // Transition preset indexes resetting active countdowns
 // Active side-effect managing countdown interval callbacks
