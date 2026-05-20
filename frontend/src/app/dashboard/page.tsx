@@ -136,21 +136,21 @@ export default function Dashboard() {
   const triggerCelebration = () => {
     const list: Balloon[] = [];
     const baseId = Date.now();
-    for (let i = 0; i < 24; i++) {
+    for (let i = 0; i < 48; i++) {
       list.push({
         id: baseId + i,
         left: Math.random() * 100,
         color: BALLOON_COLORS[Math.floor(Math.random() * BALLOON_COLORS.length)],
-        delay: Math.random() * 2.0,
-        duration: 6.0 + Math.random() * 4.0, // Stays longer: between 6s and 10s!
-        size: 45 + Math.random() * 25 // Stays varied: between 45px and 70px!
+        delay: Math.random() * 1.2,
+        duration: 2.2 + Math.random() * 1.8,
+        size: 40 + Math.random() * 20
       });
     }
     setBalloons(list);
     // Cleanup balloons after they finish floating
     setTimeout(() => {
       setBalloons([]);
-    }, 13000);
+    }, 6000);
   };
 
   return (
@@ -237,29 +237,32 @@ export default function Dashboard() {
               background: 'var(--bg-secondary)',
               border: '1px solid var(--border)',
               color: remindersEnabled ? '#f59e0b' : 'var(--text-muted)',
-              padding: '0 1rem',
+              width: '42px',
               height: '42px',
-              borderRadius: '21px',
+              borderRadius: '50%',
               cursor: 'pointer',
-              fontSize: '0.85rem',
-              fontWeight: 600,
+              fontSize: '1.2rem',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '0.5rem',
               transition: 'all 0.2s',
               boxShadow: remindersEnabled ? '0 0 15px rgba(245, 158, 11, 0.2)' : '0 4px 15px rgba(0,0,0,0.1)',
               borderColor: remindersEnabled ? '#f59e0b' : 'var(--border)'
             }}
             onMouseOver={e => {
-              e.currentTarget.style.transform = 'scale(1.04)';
+              e.currentTarget.style.transform = 'scale(1.08)';
+              if (remindersEnabled) {
+                e.currentTarget.style.boxShadow = '0 0 15px rgba(245, 158, 11, 0.4)';
+              } else {
+                e.currentTarget.style.boxShadow = '0 0 15px rgba(99, 102, 241, 0.4)';
+              }
             }}
             onMouseOut={e => {
               e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.boxShadow = remindersEnabled ? '0 0 15px rgba(245, 158, 11, 0.2)' : '0 4px 15px rgba(0,0,0,0.1)';
             }}
           >
-            <span>{remindersEnabled ? '🔔' : '🔕'}</span>
-            <span>{remindersEnabled ? 'Reminders Active' : 'Reminders Muted'}</span>
+            {remindersEnabled ? '🔔' : '🔕'}
           </button>
 
           {/* 🌓 Premium Theme Toggle Button */}
@@ -317,23 +320,24 @@ export default function Dashboard() {
       <style jsx global>{`
         @keyframes floatUpSway {
           0% { 
-            transform: translateY(0) translateX(0) rotate(0deg); 
+            transform: translateY(120px) translateX(0) scale(0.2) rotate(0deg); 
             opacity: 0; 
           }
           10% { 
             opacity: 0.95; 
+            transform: translateY(0px) translateX(0) scale(1) rotate(2deg);
           }
-          25% {
-            transform: translateY(-30vh) translateX(-20px) rotate(-10deg);
+          30% {
+            transform: translateY(-40vh) translateX(-25px) rotate(-8deg);
           }
-          50% {
-            transform: translateY(-65vh) translateX(20px) rotate(10deg);
+          60% {
+            transform: translateY(-80vh) translateX(25px) rotate(8deg);
           }
-          75% {
-            transform: translateY(-95vh) translateX(-15px) rotate(-6deg);
+          85% {
+            opacity: 0.9;
           }
           100% { 
-            transform: translateY(-130vh) translateX(5px) rotate(5deg); 
+            transform: translateY(-135vh) translateX(-5px) scale(0.9) rotate(-3deg); 
             opacity: 0; 
           }
         }

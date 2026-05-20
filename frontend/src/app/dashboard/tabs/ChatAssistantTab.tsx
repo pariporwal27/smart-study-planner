@@ -54,27 +54,91 @@ export default function ChatAssistantTab() {
     }
   };
 
+  // Premium Custom Markdown and List Renderer
+  const renderMessageText = (text: string, isUser: boolean = false) => {
+    return text.split('\n').map((line, idx) => {
+      const trimmed = line.trim();
+      
+      // Find **bold** pairs and replace with strong elements
+      const parts = line.split('**');
+      const content = parts.map((part, pIdx) => {
+        if (pIdx % 2 === 1) {
+          return <strong key={pIdx} style={{ color: isUser ? '#ffffff' : 'var(--accent)', fontWeight: 700 }}>{part}</strong>;
+        }
+        return part;
+      });
+
+      // Check if line is a bullet item starting with - or *
+      if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+        const cleanedPart = trimmed.replace(/^[-*]\s+/, '');
+        const bulletParts = cleanedPart.split('**');
+        const bulletContent = bulletParts.map((part, pIdx) => {
+          if (pIdx % 2 === 1) {
+            return <strong key={pIdx} style={{ color: isUser ? '#ffffff' : 'var(--accent)', fontWeight: 700 }}>{part}</strong>;
+          }
+          return part;
+        });
+        return (
+          <li key={idx} style={{ marginLeft: '1.25rem', listStyle: 'disc', marginBottom: '0.4rem', color: isUser ? '#ffffff' : 'var(--text-primary)' }}>
+            {bulletContent}
+          </li>
+        );
+      }
+
+      // Check if line is a numbered item starting with digits (e.g., 1.)
+      if (/^\d+\.\s+/.test(trimmed)) {
+        const cleanedPart = trimmed.replace(/^\d+\.\s+/, '');
+        const numberMatch = trimmed.match(/^\d+\.\s+/);
+        const prefix = numberMatch ? numberMatch[0] : '';
+        const bulletParts = cleanedPart.split('**');
+        const bulletContent = bulletParts.map((part, pIdx) => {
+          if (pIdx % 2 === 1) {
+            return <strong key={pIdx} style={{ color: isUser ? '#ffffff' : 'var(--accent)', fontWeight: 700 }}>{part}</strong>;
+          }
+          return part;
+        });
+        return (
+          <div key={idx} style={{ display: 'flex', gap: '0.4rem', marginLeft: '0.25rem', marginBottom: '0.4rem', color: isUser ? '#ffffff' : 'var(--text-primary)' }}>
+            <span style={{ fontWeight: 700, color: isUser ? '#ffffff' : 'var(--accent)' }}>{prefix}</span>
+            <span>{bulletContent}</span>
+          </div>
+        );
+      }
+
+      return (
+        <p key={idx} style={{ margin: '0 0 0.6rem 0', minHeight: '1em', color: isUser ? '#ffffff' : 'var(--text-primary)' }}>
+          {content}
+        </p>
+      );
+    });
+  };
+
   return (
-    <div className="card" style={{ display: 'grid', gridTemplateRows: '1fr auto', height: '520px', gap: '1rem', padding: '1.25rem' }}>
+    <div className="card" style={{ display: 'grid', gridTemplateRows: '1fr auto', height: '600px', gap: '1rem', padding: '1.5rem', background: 'rgba(30, 30, 50, 0.65)', border: '1px solid var(--border)', backdropFilter: 'blur(20px)' }}>
       
       {/* Messages Logs */}
-      <div style={{ overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <div className="no-scrollbar" style={{ overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
         {messages.map((m, i) => (
           <div key={i} style={{
             alignSelf: m.sender === 'user' ? 'flex-end' : 'flex-start',
-            maxWidth: '80%',
-            background: m.sender === 'user' ? 'rgba(99, 102, 241, 0.25)' : 'var(--bg-secondary)',
-            border: `1px solid ${m.sender === 'user' ? 'var(--accent)' : 'var(--border)'}`,
-            borderRadius: m.sender === 'user' ? '14px 14px 2px 14px' : '14px 14px 14px 2px',
-            padding: '0.8rem 1.1rem',
-            lineHeight: '1.45',
-            fontSize: '0.9rem',
-            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.15)'
+            maxWidth: '75%',
+            background: m.sender === 'user' ? 'linear-gradient(135deg, var(--accent) 0%, #4338ca 100%)' : 'var(--bg-secondary)',
+            border: m.sender === 'user' ? 'none' : '1px solid var(--border)',
+            borderRadius: m.sender === 'user' ? '20px 20px 4px 20px' : '20px 20px 20px 4px',
+            padding: '0.9rem 1.25rem',
+            lineHeight: '1.5',
+            fontSize: '0.92rem',
+            boxShadow: m.sender === 'user' ? '0 4px 20px rgba(99, 102, 241, 0.25)' : '0 4px 20px rgba(0, 0, 0, 0.15)',
+            color: m.sender === 'user' ? '#ffffff' : 'var(--text-primary)',
+            transition: 'all 0.2s'
           }}>
-            <p style={{ color: 'var(--text-primary)' }}>{m.text}</p>
+            <div style={{ wordBreak: 'break-word' }}>
+              {renderMessageText(m.text, m.sender === 'user')}
+            </div>
+            
             {m.suggestedAction && (
-              <div style={{ marginTop: '0.75rem', borderTop: '1px solid var(--border)', paddingTop: '0.5rem' }}>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.25rem' }}>Suggested:</span>
+              <div style={{ marginTop: '0.75rem', borderTop: `1px solid ${m.sender === 'user' ? 'rgba(255,255,255,0.15)' : 'var(--border)'}`, paddingTop: '0.5rem' }}>
+                <span style={{ fontSize: '0.75rem', color: m.sender === 'user' ? 'rgba(255,255,255,0.7)' : 'var(--text-muted)', display: 'block', marginBottom: '0.25rem' }}>Suggested:</span>
                 <button 
                   onClick={() => handleSend(m.suggestedAction!)}
                   style={{
@@ -98,7 +162,7 @@ export default function ChatAssistantTab() {
           </div>
         ))}
         {loading && (
-          <div style={{ alignSelf: 'flex-start', background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: '14px 14px 14px 2px', padding: '0.8rem 1.1rem', display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
+          <div style={{ alignSelf: 'flex-start', background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: '20px 20px 20px 4px', padding: '0.9rem 1.25rem', display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
             <span className="dot-blink">●</span>
             <span className="dot-blink" style={{ animationDelay: '0.2s' }}>●</span>
             <span className="dot-blink" style={{ animationDelay: '0.4s' }}>●</span>
@@ -110,22 +174,23 @@ export default function ChatAssistantTab() {
       {/* Input area */}
       <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
         {/* Preset chips */}
-        <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.75rem', whiteSpace: 'nowrap' }}>
+        <div className="no-scrollbar" style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.75rem', whiteSpace: 'nowrap' }}>
           {PRESETS.map((p, i) => (
             <button
               key={i}
               onClick={() => handleSend(p)}
               disabled={loading}
               style={{
-                background: 'transparent',
+                background: 'rgba(255, 255, 255, 0.03)',
                 border: '1px solid var(--border)',
                 color: 'var(--text-muted)',
                 borderRadius: '99px',
-                padding: '0.35rem 0.8rem',
+                padding: '0.35rem 0.75rem',
                 fontSize: '0.78rem',
                 cursor: 'pointer',
                 transition: 'all 0.2s',
-                fontFamily: 'inherit'
+                fontFamily: 'inherit',
+                flexShrink: 0
               }}
               onMouseOver={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
               onMouseOut={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)'; }}
@@ -166,6 +231,13 @@ export default function ChatAssistantTab() {
           animation: blink 1.4s infinite both;
           color: var(--accent);
           font-size: 0.8rem;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
       `}</style>
     </div>
