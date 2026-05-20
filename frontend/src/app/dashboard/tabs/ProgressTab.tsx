@@ -1,3 +1,4 @@
+// Pydantic-like structure for study target milestones
 // Core type definitions for logged study sessions
 'use client';
 
