@@ -1,3 +1,4 @@
+// Core type definitions for logged study sessions
 'use client';
 
 import { useState, useEffect } from 'react';
