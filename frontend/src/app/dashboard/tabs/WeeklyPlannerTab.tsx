@@ -146,7 +146,6 @@ export default function WeeklyPlannerTab({ addToast, triggerCelebration }: Weekl
     const updated = dailyQuests.map(q => {
       if (q.id === questId && !q.claimed) {
         awardXp(q.xpReward);
-        if (addToast) addToast(`Quest claimed! +${q.xpReward} XP awarded.`, 'success');
         if (triggerCelebration) triggerCelebration();
         return { ...q, claimed: true, completed: true };
       }
@@ -160,7 +159,6 @@ export default function WeeklyPlannerTab({ addToast, triggerCelebration }: Weekl
     const updated = achievements.map(a => {
       if (a.id === achId && a.unlocked && !a.claimed) {
         awardXp(a.xpReward);
-        if (addToast) addToast(`Achievement unlocked! +${a.xpReward} XP awarded.`, 'success');
         if (triggerCelebration) triggerCelebration();
         return { ...a, claimed: true };
       }
@@ -173,13 +171,11 @@ export default function WeeklyPlannerTab({ addToast, triggerCelebration }: Weekl
   const handleBoostXp = () => {
     const todayStr = new Date().toISOString().split('T')[0];
     if (lastBoostDate === todayStr) {
-      if (addToast) addToast("You've already claimed your free daily boost! Come back tomorrow.", "warning");
       return;
     }
     localStorage.setItem('study_last_xp_boost', todayStr);
     setLastBoostDate(todayStr);
     awardXp(25);
-    if (addToast) addToast("🚀 Daily XP Boost applied! +25 XP", "success");
     if (triggerCelebration) triggerCelebration();
   };
 
@@ -204,7 +200,6 @@ export default function WeeklyPlannerTab({ addToast, triggerCelebration }: Weekl
     setTimetable(updated);
     saveToStorage('study_timetable', updated);
     setEditingCell(null);
-    if (addToast) addToast(`Successfully updated study slot for ${editingCell.day}!`, 'success');
 
     // Trigger quest completion!
     const quests = dailyQuests.map(q => q.id === 'quest_2' ? { ...q, completed: true } : q);

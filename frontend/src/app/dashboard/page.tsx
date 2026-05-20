@@ -37,6 +37,7 @@ const BALLOON_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState(0);
   const [isLight, setIsLight] = useState(false);
+  const [remindersEnabled, setRemindersEnabled] = useState(true);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [balloons, setBalloons] = useState<Balloon[]>([]);
 
@@ -46,6 +47,11 @@ export default function Dashboard() {
       setIsLight(true);
       document.documentElement.classList.add('light-theme');
     }
+
+    const savedReminders = localStorage.getItem('study_reminders_enabled');
+    if (savedReminders !== null) {
+      setRemindersEnabled(savedReminders === 'true');
+    }
   }, []);
 
   const toggleTheme = () => {
@@ -54,13 +60,70 @@ export default function Dashboard() {
     if (next) {
       document.documentElement.classList.add('light-theme');
       localStorage.setItem('theme-light', 'true');
-      addToast('🌓 Light theme activated!', 'info');
     } else {
       document.documentElement.classList.remove('light-theme');
       localStorage.setItem('theme-light', 'false');
-      addToast('🌓 Dark theme activated!', 'info');
     }
   };
+
+  const toggleReminders = () => {
+    const next = !remindersEnabled;
+    setRemindersEnabled(next);
+    localStorage.setItem('study_reminders_enabled', next ? 'true' : 'false');
+  };
+
+  // Automatic study reminders background effect
+  useEffect(() => {
+    const checkReminder = () => {
+      const savedReminders = localStorage.getItem('study_reminders_enabled');
+      if (savedReminders === 'false') return;
+
+      const now = new Date();
+      const DAYS_MAP = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const currentDay = DAYS_MAP[now.getDay()];
+      const currentHour = now.getHours();
+      const currentDateStr = now.toISOString().split('T')[0];
+
+      let slotIndex = -1;
+      if (currentHour >= 9 && currentHour < 12) {
+        slotIndex = 0;
+      } else if (currentHour >= 13 && currentHour < 16) {
+        slotIndex = 1;
+      } else if (currentHour >= 17 && currentHour < 20) {
+        slotIndex = 2;
+      }
+
+      if (slotIndex !== -1) {
+        const savedTimetable = localStorage.getItem('study_timetable');
+        if (savedTimetable) {
+          try {
+            const timetable = JSON.parse(savedTimetable);
+            const cell = timetable.find((c: any) => c.day === currentDay && c.slotIndex === slotIndex);
+            if (cell) {
+              const lastReminderKey = `${currentDateStr}-${slotIndex}`;
+              const savedLastReminder = localStorage.getItem('study_last_reminder_slot');
+              if (savedLastReminder !== lastReminderKey) {
+                addToast(`🔔 Study Reminder: Time to study ${cell.subject}! (${cell.timeRange}) 📚`, 'info');
+                localStorage.setItem('study_last_reminder_slot', lastReminderKey);
+              }
+            }
+          } catch (e) {
+            console.error('Error checking timetable reminders:', e);
+          }
+        }
+      }
+    };
+
+    // Check on mount (after short delay to ensure initial load completes)
+    const timeout = setTimeout(checkReminder, 1500);
+
+    // Set interval to check every 30 seconds
+    const interval = setInterval(checkReminder, 30000);
+    return () => {
+      clearTimeout(timeout);
+      clearInterval(interval);
+    };
+  }, [remindersEnabled]);
 
   const addToast = (message: string, type: 'info' | 'success' | 'warning' = 'success') => {
     const id = Date.now();
@@ -165,43 +228,78 @@ export default function Dashboard() {
           <p>ML-based daily subject allocation using Linear Regression and Random Forest.</p>
         </div>
 
-        {/* 🌓 Premium Theme Toggle Button */}
-        <button 
-          onClick={toggleTheme}
-          title={isLight ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
-          style={{
-            background: 'var(--bg-secondary)',
-            border: '1px solid var(--border)',
-            color: 'var(--text-primary)',
-            width: '42px',
-            height: '42px',
-            borderRadius: '50%',
-            cursor: 'pointer',
-            fontSize: '1.2rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.2s',
-            boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
-          }}
-          onMouseOver={e => { 
-            e.currentTarget.style.borderColor = 'var(--accent)'; 
-            e.currentTarget.style.transform = 'scale(1.08)';
-            e.currentTarget.style.boxShadow = '0 0 15px rgba(99, 102, 241, 0.4)';
-          }}
-          onMouseOut={e => { 
-            e.currentTarget.style.borderColor = 'var(--border)'; 
-            e.currentTarget.style.transform = 'scale(1)';
-            e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
-          }}
-        >
-          {isLight ? '🌙' : '☀️'}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          {/* 🔔 Premium Study Reminders Toggle */}
+          <button
+            onClick={toggleReminders}
+            title={remindersEnabled ? 'Mute Study Reminders' : 'Enable Study Reminders'}
+            style={{
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border)',
+              color: remindersEnabled ? '#f59e0b' : 'var(--text-muted)',
+              padding: '0 1rem',
+              height: '42px',
+              borderRadius: '21px',
+              cursor: 'pointer',
+              fontSize: '0.85rem',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              transition: 'all 0.2s',
+              boxShadow: remindersEnabled ? '0 0 15px rgba(245, 158, 11, 0.2)' : '0 4px 15px rgba(0,0,0,0.1)',
+              borderColor: remindersEnabled ? '#f59e0b' : 'var(--border)'
+            }}
+            onMouseOver={e => {
+              e.currentTarget.style.transform = 'scale(1.04)';
+            }}
+            onMouseOut={e => {
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          >
+            <span>{remindersEnabled ? '🔔' : '🔕'}</span>
+            <span>{remindersEnabled ? 'Reminders Active' : 'Reminders Muted'}</span>
+          </button>
+
+          {/* 🌓 Premium Theme Toggle Button */}
+          <button 
+            onClick={toggleTheme}
+            title={isLight ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+            style={{
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border)',
+              color: 'var(--text-primary)',
+              width: '42px',
+              height: '42px',
+              borderRadius: '50%',
+              cursor: 'pointer',
+              fontSize: '1.2rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
+            }}
+            onMouseOver={e => { 
+              e.currentTarget.style.borderColor = 'var(--accent)'; 
+              e.currentTarget.style.transform = 'scale(1.08)';
+              e.currentTarget.style.boxShadow = '0 0 15px rgba(99, 102, 241, 0.4)';
+            }}
+            onMouseOut={e => { 
+              e.currentTarget.style.borderColor = 'var(--border)'; 
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+            }}
+          >
+            {isLight ? '🌙' : '☀️'}
+          </button>
+        </div>
       </div>
 
       <div className="tab-bar">
         {TABS.map((t, i) => (
-          <button key={i} className={`tab-btn ${activeTab === i ? 'active' : ''}`} onClick={() => { setActiveTab(i); addToast(`Switched to ${t.slice(2)}`, 'info'); }}>
+          <button key={i} className={`tab-btn ${activeTab === i ? 'active' : ''}`} onClick={() => setActiveTab(i)}>
             {t}
           </button>
         ))}

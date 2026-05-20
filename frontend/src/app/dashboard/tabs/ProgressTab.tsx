@@ -116,7 +116,6 @@ export default function ProgressTab({ addToast, triggerCelebration }: ProgressTa
     setEntries(updated);
     localStorage.setItem('study_progress', JSON.stringify(updated));
 
-    if (addToast) addToast("Progress saved successfully!", "success");
     if (triggerCelebration) triggerCelebration();
 
     // Auto-update goals progress!
@@ -142,7 +141,6 @@ export default function ProgressTab({ addToast, triggerCelebration }: ProgressTa
     if (confirm('Clear all progress?')) {
       setEntries([]);
       localStorage.removeItem('study_progress');
-      if (addToast) addToast("All study progress cleared.", "warning");
     }
   };
 
@@ -157,7 +155,6 @@ export default function ProgressTab({ addToast, triggerCelebration }: ProgressTa
     const updated = [...goals, newGoal];
     setGoals(updated);
     localStorage.setItem('study_goals', JSON.stringify(updated));
-    if (addToast) addToast(`New milestone goal added for ${goalSubject}!`, "success");
   };
 
   const removeGoal = (id: number) => {
@@ -168,17 +165,23 @@ export default function ProgressTab({ addToast, triggerCelebration }: ProgressTa
 
   const toggleGoalComplete = (id: number) => {
     let triggered = false;
+    let completedSubject = '';
     const updated = goals.map(g => {
       if (g.id === id) {
         const nextCompleted = !g.completed;
-        if (nextCompleted) triggered = true;
+        if (nextCompleted) {
+          triggered = true;
+          completedSubject = g.subject;
+        }
         return { ...g, completed: nextCompleted };
       }
       return g;
     });
     setGoals(updated);
     localStorage.setItem('study_goals', JSON.stringify(updated));
-    if (addToast) addToast("Goal status updated!", "success");
+    if (triggered && addToast) {
+      addToast(`🎯 Goal completed for ${completedSubject}!`, "success");
+    }
     if (triggered && triggerCelebration) triggerCelebration();
   };
 
@@ -186,7 +189,7 @@ export default function ProgressTab({ addToast, triggerCelebration }: ProgressTa
   const totalPlanned = entries.reduce((s, e) => s + e.planned, 0);
   const totalActual = entries.reduce((s, e) => s + e.actual, 0);
   const consistency = totalPlanned > 0 ? Math.min((totalActual / totalPlanned) * 100, 100) : 0;
-  const uniqueDates = [...new Set(entries.map(e => e.date))].sort();
+  const uniqueDates = Array.from(new Set(entries.map(e => e.date))).sort();
   
   const streak = (() => {
     let s = 0;

@@ -20,7 +20,7 @@ export default function InsightsTab() {
       const totalActual = data.reduce((s: number, e: any) => s + e.actual, 0);
       const totalPlanned = data.reduce((s: number, e: any) => s + e.planned, 0);
       const consistency = totalPlanned > 0 ? (totalActual / totalPlanned) * 100 : 0;
-      const avgActual = data.length > 0 ? totalActual / [...new Set(data.map((e: any) => e.date))].length : 0;
+      const avgActual = data.length > 0 ? totalActual / Array.from(new Set(data.map((e: any) => e.date))).length : 0;
       if (totalActual > totalPlanned * 1.15 || avgActual > 8) setPersonaIdx(3);
       else if (consistency >= 80 && avgActual <= 6) setPersonaIdx(0);
       else if (avgActual >= 4 && data.length >= 3) setPersonaIdx(1);
@@ -29,7 +29,7 @@ export default function InsightsTab() {
   }, []);
 
   const persona = PERSONAS[personaIdx];
-  const uniqueDates = [...new Set(entries.map((e: any) => e.date))];
+  const uniqueDates = Array.from(new Set(entries.map((e: any) => e.date)));
   const streak = (() => {
     let s = 0;
     const today = new Date();
