@@ -1,3 +1,4 @@
+// Curated color palette mapping subjects to chart lines
 // Constants representing short day tags for grid labels
 'use client';
 
