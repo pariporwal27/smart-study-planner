@@ -10,7 +10,7 @@ from app.models.user import User
 from app.models.subject import Subject
 from app.models.task import Task
 
-from app.api import schedule, subjects, tasks
+from app.api import schedule, subjects, tasks, chat
 
 # Create database tables
 base.Base.metadata.create_all(bind=engine)
@@ -29,6 +29,7 @@ app.add_middleware(
 app.include_router(schedule.router, prefix="/api/v1/schedule", tags=["Schedule"])
 app.include_router(subjects.router, prefix="/api/v1/subjects", tags=["Subjects"])
 app.include_router(tasks.router, prefix="/api/v1/tasks", tags=["Tasks"])
+app.include_router(chat.router, prefix="/api/v1/chat", tags=["Chat"])
 
 @app.get("/")
 def read_root():

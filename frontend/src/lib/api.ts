@@ -14,11 +14,12 @@ export const getSubjects = async () => {
   return response.data;
 };
 
-export const generateSchedule = async (subjects, daysLeft, totalHours) => {
+export const generateSchedule = async (subjects: any[], daysLeft: number, totalHours: number) => {
+  // Map difficulty & past_score keys if present
   const response = await apiClient.post('/schedule/generate', {
     subjects: subjects.map(s => ({
       name: s.name,
-      difficulty: s.difficulty_level || 3,
+      difficulty: s.difficulty || s.difficulty_level || 3,
       past_score: s.past_score || 70
     })),
     days_left: daysLeft,
@@ -27,12 +28,17 @@ export const generateSchedule = async (subjects, daysLeft, totalHours) => {
   return response.data;
 };
 
-export const getTasks = async (subjectId: int) => {
+export const getTasks = async (subjectId: number) => {
   const response = await apiClient.get(`/tasks/subject/${subjectId}`);
   return response.data;
 };
 
-export const updateTaskStatus = async (taskId: int, status: string) => {
+export const updateTaskStatus = async (taskId: number, status: string) => {
   const response = await apiClient.put(`/tasks/${taskId}/status?status=${status}`);
+  return response.data;
+};
+
+export const askChatbot = async (message: string, subject: string = 'general') => {
+  const response = await apiClient.post('/chat/', { message, subject });
   return response.data;
 };
