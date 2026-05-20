@@ -1,3 +1,4 @@
+// Side-effect computing spaced reviews based on study sessions
 // React effect reading user parameters from localStorage
 // Structure representing Leitner recall spaced review dates
 // Pydantic-like structure for study target milestones
