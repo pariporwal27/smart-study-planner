@@ -1,3 +1,4 @@
+# Core heuristics rules matching messages to subjects
 # Curated study recommendations and active recall helper tips
 # Pydantic response structures for chatbot interface
 # Pydantic request structures for chatbot interface
