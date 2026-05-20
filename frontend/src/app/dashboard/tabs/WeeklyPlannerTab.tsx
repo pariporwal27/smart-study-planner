@@ -1,3 +1,4 @@
+// Constants representing short day tags for grid labels
 'use client';
 
 import { useState, useEffect } from 'react';
